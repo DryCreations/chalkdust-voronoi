@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voronoi Diagram</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3-delaunay@6"></script>
+  <link rel="stylesheet" href="styles.css">
+  <script src="sketch.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="controls">
+      <h1>Voronoi Diagram Generator</h1>
+
+      <!-- Layer Toggles -->
+      <h3>Layer Controls</h3>
+      <div class="toggle-container">
+        <label for="layerColoredTiles">Colored Tiles:</label>
+        <input type="checkbox" id="layerColoredTiles" checked>
+      </div>
+      <div class="toggle-container">
+        <label for="layerDots">Dots:</label>
+        <input type="checkbox" id="layerDots" checked>
+        <label for="dotsColorInput">Color:</label>
+        <input type="text" id="dotsColorInput" value="#FD5901">
+        <label for="dotsTransparencyInput">Transparency:</label>
+        <input type="number" id="dotsTransparencyInput" value="255" min="0" max="255">
+        <label for="dotsWeightInput">Weight:</label>
+        <input type="number" id="dotsWeightInput" value="1" min="1">
+      </div>
+      <div class="toggle-container">
+        <label for="layerDelaunayCircles">Delaunay Circles:</label>
+        <input type="checkbox" id="layerDelaunayCircles" checked>
+      </div>
+      <div class="toggle-container">
+        <label for="layerDelaunay">Delaunay Triangulation:</label>
+        <input type="checkbox" id="layerDelaunay" checked>
+      </div>
+      <div class="toggle-container">
+        <label for="layerVoronoi">Voronoi Edges:</label>
+        <input type="checkbox" id="layerVoronoi" checked>
+      </div>
+      <div class="toggle-container">
+        <label for="layerVoronoiFilled">Voronoi Filled:</label>
+        <input type="checkbox" id="layerVoronoiFilled" checked>
+      </div>
+
+      <!-- Layer Editing Selection -->
+      <h3>Editing Layer</h3>
+      <div class="toggle-container">
+        <label for="editingLayer">Select Layer to Edit:</label>
+        <select id="editingLayer">
+          <option value="coloredTiles">Colored Tiles</option>
+          <option value="dots">Dots</option>
+          <option value="delaunayCircles">Delaunay Circles</option>
+          <option value="delaunay">Delaunay</option>
+          <option value="voronoiEdges">Voronoi Edges</option>
+          <option value="voronoiFilled">Voronoi Filled</option>
+        </select>
+      </div>
+
+      <!-- Export Settings -->
+      <h3>Export Settings</h3>
+      <div class="toggle-container">
+        <label for="exportSize">Export Size:</label>
+        <select id="exportSize">
+          <option value="1">1x (Current Size)</option>
+          <option value="2">2x</option>
+          <option value="3">3x</option>
+          <option value="4">4x</option>
+        </select>
+      </div>
+
+      <!-- Buttons for Actions -->
+      <h3>Actions</h3>
+      <div class="controls">
+        <button id="generateNewPointsButton">Generate New Points</button>
+        <button id="exportImageButton">Export Image</button>
+      </div>
+      <div class="toggle-container">
+        <label for="numPointsInput">Number of Points:</label>
+        <input type="number" id="numPointsInput" value="10">
+      </div>
+      <div class="toggle-container">
+        <label for="tileColorsInput">Tile Colors (Comma Separated):</label>
+        <input type="text" id="tileColorsInput" value="#FD5901, #F78104, #FAAB36, #249EA0, #008083, #005F60">
+      </div>
+      <div class="toggle-container">
+        <label for="edgeColorInput">Voronoi Edge Color:</label>
+        <input type="text" id="edgeColorInput" value="#000000">
+        <label for="edgeTransparencyInput">Transparency:</label>
+        <input type="number" id="edgeTransparencyInput" value="255" min="0" max="255">
+        <label for="edgeWeightInput">Weight:</label>
+        <input type="number" id="edgeWeightInput" value="1" min="1">
+      </div>
+      <div class="toggle-container">
+        <label for="delaunayEdgeColorInput">Delaunay Edge Color:</label>
+        <input type="text" id="delaunayEdgeColorInput" value="#FF0000">
+        <label for="delaunayEdgeTransparencyInput">Transparency:</label>
+        <input type="number" id="delaunayEdgeTransparencyInput" value="255" min="0" max="255">
+        <label for="delaunayEdgeWeightInput">Weight:</label>
+        <input type="number" id="delaunayEdgeWeightInput" value="1" min="1">
+      </div>
+      <div class="toggle-container">
+        <label for="delaunayCircleColorInput">Delaunay Circle Color:</label>
+        <input type="text" id="delaunayCircleColorInput" value="#0000FF">
+        <label for="delaunayCircleTransparencyInput">Transparency:</label>
+        <input type="number" id="delaunayCircleTransparencyInput" value="255" min="0" max="255">
+        <label for="delaunayCircleWeightInput">Weight:</label>
+        <input type="number" id="delaunayCircleWeightInput" value="1" min="1">
+      </div>
+      <div class="toggle-container">
+        <label for="voronoiFillColorInput">Voronoi Fill Color:</label>
+        <input type="text" id="voronoiFillColorInput" value="#000000">
+        <label for="voronoiFillTransparencyInput">Transparency:</label>
+        <input type="number" id="voronoiFillTransparencyInput" value="255" min="0" max="255">
+        <label for="voronoiFillWeightInput">Weight:</label>
+        <input type="number" id="voronoiFillWeightInput" value="1" min="1">
+      </div>
+    </div>
+
+    <div id="canvas-container">
+    </div>
+  </div>
+</body>
+</html>

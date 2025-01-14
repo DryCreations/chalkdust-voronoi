@@ -1,0 +1,68 @@
+/* Basic Layout */
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 20px;
+    margin: 0;
+  }
+  
+  .container {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+  }
+  
+  .controls {
+    width: 250px;
+    padding: 10px;
+  }
+  
+  h1 {
+    font-size: 24px;
+  }
+  
+  h3 {
+    font-size: 18px;
+  }
+  
+  button {
+    margin: 10px 0;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  
+  button:hover {
+    background-color: #45a049;
+  }
+  
+  #canvas-container {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #ccc;
+    background-color: #f0f0f0;
+    position: relative;
+  }
+  
+  .toggle-container {
+    margin-bottom: 10px;
+  }
+  
+  label {
+    margin-right: 10px;
+  }
+  
+  input[type="checkbox"] {
+    margin-left: 5px;
+  }
+  
+  select {
+    margin-left: 5px;
+  }
+  
