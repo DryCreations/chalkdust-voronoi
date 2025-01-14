@@ -19,16 +19,16 @@ let filledCells = [];
 let buffers = {};
 
 function setup() {
-  createCanvas(800, 600);
+  createCanvas(800, 600, WEBGL);
   const container = document.getElementById('canvas-container');
 
   // Initialize buffers for each layer
-  buffers.coloredTiles = createGraphics(width, height);
-  buffers.dots = createGraphics(width, height);
-  buffers.delaunayCircles = createGraphics(width, height);
-  buffers.delaunay = createGraphics(width, height);
-  buffers.voronoiEdges = createGraphics(width, height);
-  buffers.voronoiFilled = createGraphics(width, height);
+  buffers.coloredTiles = createGraphics(width, height, WEBGL);
+  buffers.dots = createGraphics(width, height, WEBGL);
+  buffers.delaunayCircles = createGraphics(width, height, WEBGL);
+  buffers.delaunay = createGraphics(width, height, WEBGL);
+  buffers.voronoiEdges = createGraphics(width, height, WEBGL);
+  buffers.voronoiFilled = createGraphics(width, height, WEBGL);
 
   // Initialize event listeners
   document.getElementById('generateNewPointsButton').addEventListener('click', generateRandomPoints);
@@ -122,32 +122,38 @@ function draw() {
   if (layers.coloredTiles) {
     drawColoredTiles(voronoi, buffers.coloredTiles);
     tint(255, getEdgeTransparency());
-    image(buffers.coloredTiles, 0, 0);
+    texture(buffers.coloredTiles);
+    plane(width, height);
   }
   if (layers.dots) {
     drawDots(buffers.dots);
     tint(255, getDotsTransparency());
-    image(buffers.dots, 0, 0);
+    texture(buffers.dots);
+    plane(width, height);
   }
   if (layers.delaunayCircles) {
     drawDelaunayCircles(delaunay, buffers.delaunayCircles);
     tint(255, getDelaunayCircleTransparency());
-    image(buffers.delaunayCircles, 0, 0);
+    texture(buffers.delaunayCircles);
+    plane(width, height);
   }
   if (layers.delaunay) {
     drawDelaunay(delaunay, buffers.delaunay);
     tint(255, getDelaunayEdgeTransparency());
-    image(buffers.delaunay, 0, 0);
+    texture(buffers.delaunay);
+    plane(width, height);
   }
   if (layers.voronoiEdges) {
     drawVoronoiEdges(voronoi, buffers.voronoiEdges);
     tint(255, getEdgeTransparency());
-    image(buffers.voronoiEdges, 0, 0);
+    texture(buffers.voronoiEdges);
+    plane(width, height);
   }
   if (layers.voronoiFilled) {
     drawVoronoiFilled(voronoi, buffers.voronoiFilled);
     tint(255, getVoronoiFillTransparency());
-    image(buffers.voronoiFilled, 0, 0);
+    texture(buffers.voronoiFilled);
+    plane(width, height);
   }
 
   if (mouseIsPressed && isMouseInCanvas()) {
@@ -170,6 +176,8 @@ function generateRandomPoints() {
 
 function drawColoredTiles(voronoi, buffer) {
   buffer.clear();
+  buffer.push();
+  buffer.translate(-width / 2, -height / 2);
   let palette = getTilePalette();
   for (let i = 0; i < points.length; i++) {
     let polygon = voronoi.cellPolygon(i);
@@ -180,10 +188,13 @@ function drawColoredTiles(voronoi, buffer) {
     polygon.forEach(([x, y]) => buffer.vertex(x, y));
     buffer.endShape(CLOSE);
   }
+  buffer.pop();
 }
 
 function drawDots(buffer) {
   buffer.clear();
+  buffer.push();
+  buffer.translate(-width / 2, -height / 2);
   let dotColor = color(getDotsColor());
   let weight = getDotsWeight();
   buffer.fill(dotColor.levels[0], dotColor.levels[1], dotColor.levels[2], 255);
@@ -191,10 +202,13 @@ function drawDots(buffer) {
   for (let [x, y] of points) {
     buffer.ellipse(x, y, weight, weight);
   }
+  buffer.pop();
 }
 
 function drawDelaunay(delaunay, buffer) {
   buffer.clear();
+  buffer.push();
+  buffer.translate(-width / 2, -height / 2);
   let edgeColor = color(getDelaunayEdgeColor());
   let weight = getDelaunayEdgeWeight();
   buffer.stroke(edgeColor.levels[0], edgeColor.levels[1], edgeColor.levels[2], 255);
@@ -208,10 +222,13 @@ function drawDelaunay(delaunay, buffer) {
     buffer.line(points[t1][0], points[t1][1], points[t2][0], points[t2][1]);
     buffer.line(points[t2][0], points[t2][1], points[t0][0], points[t0][1]);
   }
+  buffer.pop();
 }
 
 function drawDelaunayCircles(delaunay, buffer) {
   buffer.clear();
+  buffer.push();
+  buffer.translate(-width / 2, -height / 2);
   let circleColor = color(getDelaunayCircleColor());
   let weight = getDelaunayCircleWeight();
   buffer.stroke(circleColor.levels[0], circleColor.levels[1], circleColor.levels[2], 255);
@@ -229,10 +246,13 @@ function drawDelaunayCircles(delaunay, buffer) {
     let r = dist(cx, cy, x0, y0);
     buffer.ellipse(cx, cy, r * 2, r * 2);
   }
+  buffer.pop();
 }
 
 function drawVoronoiEdges(voronoi, buffer) {
   buffer.clear();
+  buffer.push();
+  buffer.translate(-width / 2, -height / 2);
   let edgeColor = color(getVoronoiEdgeColor());
   let weight = getEdgeWeight();
   buffer.stroke(edgeColor.levels[0], edgeColor.levels[1], edgeColor.levels[2], 255);
@@ -245,10 +265,13 @@ function drawVoronoiEdges(voronoi, buffer) {
     polygon.forEach(([x, y]) => buffer.vertex(x, y));
     buffer.endShape(CLOSE);
   }
+  buffer.pop();
 }
 
 function drawVoronoiFilled(voronoi, buffer) {
   buffer.clear();
+  buffer.push();
+  buffer.translate(-width / 2, -height / 2);
   let fillColor = color(getVoronoiFillColor());
   for (let i = 0; i < points.length; i++) {
     if (filledCells.includes(i)) {
@@ -261,6 +284,7 @@ function drawVoronoiFilled(voronoi, buffer) {
       buffer.endShape(CLOSE);
     }
   }
+  buffer.pop();
 }
 
 function handleLayerEditing() {
