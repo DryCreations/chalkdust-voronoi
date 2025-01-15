@@ -20,6 +20,7 @@ let buffers = {};
 
 function setup() {
   createCanvas(800, 600, WEBGL);
+  noStroke()
   const container = document.getElementById('canvas-container');
 
   // Initialize buffers for each layer
@@ -151,13 +152,12 @@ function draw() {
   }
   if (layers.voronoiFilled) {
     drawVoronoiFilled(voronoi, buffers.voronoiFilled);
+    buffers.voronoiFilled.texture(buffers.voronoiEdges)
+    buffers.voronoiFilled.noStroke();
+    buffers.voronoiFilled.plane(buffers.voronoiFilled.width, buffers.voronoiFilled.height);
     tint(255, getVoronoiFillTransparency());
     texture(buffers.voronoiFilled);
     plane(width, height);
-  }
-
-  if (mouseIsPressed && isMouseInCanvas()) {
-    handleLayerEditing();
   }
 }
 
@@ -241,10 +241,16 @@ function drawDelaunayCircles(delaunay, buffer) {
     let [x0, y0] = points[t0];
     let [x1, y1] = points[t1];
     let [x2, y2] = points[t2];
-    let cx = (x0 + x1 + x2) / 3;
-    let cy = (y0 + y1 + y2) / 3;
-    let r = dist(cx, cy, x0, y0);
-    buffer.ellipse(cx, cy, r * 2, r * 2);
+
+    // Calculate the circumcenter
+    let D = 2 * (x0 * (y1 - y2) + x1 * (y2 - y0) + x2 * (y0 - y1));
+    let Ux = ((x0 * x0 + y0 * y0) * (y1 - y2) + (x1 * x1 + y1 * y1) * (y2 - y0) + (x2 * x2 + y2 * y2) * (y0 - y1)) / D;
+    let Uy = ((x0 * x0 + y0 * y0) * (x2 - x1) + (x1 * x1 + y1 * y1) * (x0 - x2) + (x2 * x2 + y2 * y2) * (x1 - x0)) / D;
+
+    // Calculate the circumradius
+    let r = dist(Ux, Uy, x0, y0);
+
+    buffer.ellipse(Ux, Uy, r * 2, r * 2);
   }
   buffer.pop();
 }
@@ -301,6 +307,7 @@ function handleLayerEditing() {
     case 'voronoiFilled':
       let delaunay = d3.Delaunay.from(points);
       let clickedIndex = delaunay.find(mouseX, mouseY);
+      console.log(filledCells)
       if (clickedIndex >= 0 && !filledCells.includes(clickedIndex)) {
         filledCells.push(clickedIndex);
         draw();
@@ -344,6 +351,18 @@ function mousePressed() {
       draw();
     }
   }
+  if (currentEditingLayer === 'voronoiFilled') {
+    let delaunay = d3.Delaunay.from(points);
+      let clickedIndex = delaunay.find(mouseX, mouseY);
+      console.log(filledCells)
+      if (clickedIndex >= 0 && !filledCells.includes(clickedIndex)) {
+        filledCells.push(clickedIndex);
+        draw();
+      } else if (clickedIndex >= 0 && filledCells.includes(clickedIndex)) {
+        filledCells = filledCells.filter(cell => cell !== clickedIndex);
+        draw();
+      }
+    }
 }
 
 function mouseDragged() {
