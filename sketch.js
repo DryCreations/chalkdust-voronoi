@@ -23,7 +23,7 @@ let layers = {
 };
 let currentEditingLayer = 'coloredTiles';
 let exportScale = 1;
-let width = 1000, height = 1200;
+let width = 800, height = 800;
 let selectedDotIndex = null;
 let offsetX = 0;
 let offsetY = 0;
@@ -31,29 +31,29 @@ let filledCells = [];
 let buffers = {};
 
 function setup() {
-  createCanvas(width, height, WEBGL);
+  createCanvas(width, height);
   noStroke()
   const container = document.getElementById('canvas-container');
 
   // Initialize buffers for each layer
-  buffers.coloredTiles = createGraphics(width, height, WEBGL);
-  buffers.coloredTilesShadow = createGraphics(width, height, WEBGL);
-  buffers.coloredTilesScreen = createGraphics(width, height, WEBGL);
-  buffers.dots = createGraphics(width, height, WEBGL);
-  buffers.dotsShadow = createGraphics(width, height, WEBGL);
-  buffers.dotsScreen = createGraphics(width, height, WEBGL);
-  buffers.delaunayCircles = createGraphics(width, height, WEBGL);
-  buffers.delaunayCirclesShadow = createGraphics(width, height, WEBGL);
-  buffers.delaunayCirclesScreen = createGraphics(width, height, WEBGL);
-  buffers.delaunay = createGraphics(width, height, WEBGL);
-  buffers.delaunayShadow = createGraphics(width, height, WEBGL);
-  buffers.delaunayScreen = createGraphics(width, height, WEBGL);
-  buffers.voronoiEdges = createGraphics(width, height, WEBGL);
-  buffers.voronoiEdgesShadow = createGraphics(width, height, WEBGL);
-  buffers.voronoiEdgesScreen = createGraphics(width, height, WEBGL);
-  buffers.voronoiFilled = createGraphics(width, height, WEBGL);
-  buffers.voronoiFilledShadow = createGraphics(width, height, WEBGL);
-  buffers.voronoiFilledScreen = createGraphics(width, height, WEBGL);
+  buffers.coloredTiles = createGraphics(width, height);
+  buffers.coloredTilesShadow = createGraphics(width, height);
+  buffers.coloredTilesScreen = createGraphics(width, height);
+  buffers.dots = createGraphics(width, height);
+  buffers.dotsShadow = createGraphics(width, height);
+  buffers.dotsScreen = createGraphics(width, height);
+  buffers.delaunayCircles = createGraphics(width, height);
+  buffers.delaunayCirclesShadow = createGraphics(width, height);
+  buffers.delaunayCirclesScreen = createGraphics(width, height);
+  buffers.delaunay = createGraphics(width, height);
+  buffers.delaunayShadow = createGraphics(width, height);
+  buffers.delaunayScreen = createGraphics(width, height);
+  buffers.voronoiEdges = createGraphics(width, height);
+  buffers.voronoiEdgesShadow = createGraphics(width, height);
+  buffers.voronoiEdgesScreen = createGraphics(width, height);
+  buffers.voronoiFilled = createGraphics(width, height);
+  buffers.voronoiFilledShadow = createGraphics(width, height);
+  buffers.voronoiFilledScreen = createGraphics(width, height);
 
   // Initialize event listeners
   document.getElementById('generateNewPointsButton').addEventListener('click', generateRandomPoints);
@@ -231,49 +231,42 @@ function draw() {
         drawColoredTiles(voronoi, buffers.coloredTiles);
         // applyBlurAndThreshold(buffers.coloredTiles, 'coloredTiles');
         tint(255, getEdgeTransparency());
-        texture(buffers.coloredTiles);
-        plane(width, height);
+        image(buffers.coloredTiles, 0, 0);
       }
       if (layer === 'dots') {
         drawDots(buffers.dots);
         applyBlurAndThreshold(buffers.dots, 'dots');
         tint(255, getDotsTransparency());
-        texture(buffers.dots);
-        plane(width, height);
+        image(buffers.dots, 0, 0);
       }
       if (layer === 'delaunayCircles') {
         drawDelaunayCircles(delaunay, buffers.delaunayCircles);
         applyBlurAndThreshold(buffers.delaunayCircles, 'delaunayCircles');
         tint(255, getDelaunayCircleTransparency());
-        texture(buffers.delaunayCircles);
-        plane(width, height);
+        image(buffers.delaunayCircles, 0, 0);
       }
       if (layer === 'delaunay') {
         drawDelaunay(delaunay, buffers.delaunay);
         applyBlurAndThreshold(buffers.delaunay, 'delaunay');
         tint(255, getDelaunayEdgeTransparency());
-        texture(buffers.delaunay);
-        plane(width, height);
+        image(buffers.delaunay, 0, 0);
       }
   
       if (layer === 'voronoiEdges') {
         drawVoronoiEdges(voronoi, buffers.voronoiEdges);
         applyBlurAndThreshold(buffers.voronoiEdges, 'voronoiEdges');
         tint(255, getEdgeTransparency());
-        texture(buffers.voronoiEdges);
-        plane(width, height);
+        image(buffers.voronoiEdges, 0, 0);
       }
       if (layer === 'voronoiFilled') {
         drawVoronoiEdges(voronoi, buffers.voronoiEdges);
         applyBlurAndThreshold(buffers.voronoiEdges, 'voronoiEdges');
         drawVoronoiFilled(voronoi, buffers.voronoiFilled);
         buffers.voronoiFilled.noStroke();
-        buffers.voronoiFilled.texture(buffers.voronoiEdges);
-        buffers.voronoiFilled.plane(width, height);
+        buffers.voronoiFilled.image(buffers.voronoiEdges, 0, 0);
         applyBlurAndThreshold(buffers.voronoiFilled, 'voronoiFilled');
         tint(255, getVoronoiFillTransparency());
-        texture(buffers.voronoiFilled);
-        plane(width, height);
+        image(buffers.voronoiFilled, 0, 0);
       }
     }
 
@@ -291,8 +284,7 @@ function draw() {
       push();
       blendMode(SCREEN);
       buffers[`${layer}Screen`].tint(255, so);
-      texture(buffers[`${layer}Screen`]);
-      plane(width, height);
+      image(buffers[`${layer}Screen`], 0, 0);
       pop();
     }
 
@@ -304,8 +296,7 @@ function draw() {
       // Optionally apply a threshold here with your existing logic:
       // applyBlurAndThreshold(buffers[`${layer}Shadow`], `${layer}Shadow`);
       buffers[`${layer}Shadow`].tint(255, getShadowOpacity(layer));
-      texture(buffers[`${layer}Shadow`]);
-      plane(width, height);
+      image(buffers[`${layer}Shadow`], 0, 0);
     }
   });
 }
@@ -326,7 +317,6 @@ function generateRandomPoints() {
 function drawColoredTiles(voronoi, buffer) {
   buffer.clear();
   buffer.push();
-  buffer.translate(-width / 2, -height / 2);
   let palette = getTilePalette();
   for (let i = 0; i < points.length; i++) {
     let polygon = voronoi.cellPolygon(i);
@@ -343,7 +333,6 @@ function drawColoredTiles(voronoi, buffer) {
 function drawDots(buffer) {
   buffer.clear();
   buffer.push();
-  buffer.translate(-width / 2, -height / 2);
   let dotColor = color(getDotsColor());
   let weight = getDotsWeight();
   buffer.fill(dotColor.levels[0], dotColor.levels[1], dotColor.levels[2], 255);
@@ -357,7 +346,6 @@ function drawDots(buffer) {
 function drawDelaunay(delaunay, buffer) {
   buffer.clear();
   buffer.push();
-  buffer.translate(-width / 2, -height / 2);
   let edgeColor = color(getDelaunayEdgeColor());
   let weight = getDelaunayEdgeWeight();
   buffer.stroke(edgeColor.levels[0], edgeColor.levels[1], edgeColor.levels[2], 255);
@@ -377,7 +365,6 @@ function drawDelaunay(delaunay, buffer) {
 function drawDelaunayCircles(delaunay, buffer) {
   buffer.clear();
   buffer.push();
-  buffer.translate(-width / 2, -height / 2);
   let circleColor = color(getDelaunayCircleColor());
   let weight = getDelaunayCircleWeight();
   buffer.stroke(circleColor.levels[0], circleColor.levels[1], circleColor.levels[2], 255);
@@ -407,7 +394,6 @@ function drawDelaunayCircles(delaunay, buffer) {
 function drawVoronoiEdges(voronoi, buffer) {
   buffer.clear();
   buffer.push();
-  buffer.translate(-width / 2, -height / 2);
   let edgeColor = color(getVoronoiEdgeColor());
   let weight = getEdgeWeight();
   buffer.stroke(edgeColor.levels[0], edgeColor.levels[1], edgeColor.levels[2], 255);
@@ -426,7 +412,6 @@ function drawVoronoiEdges(voronoi, buffer) {
 function drawVoronoiFilled(voronoi, buffer) {
   buffer.clear();
   buffer.push();
-  buffer.translate(-width / 2, -height / 2);
   let fillColor = color(getVoronoiFillColor());
   for (let i = 0; i < points.length; i++) {
     if (filledCells.includes(i)) {
