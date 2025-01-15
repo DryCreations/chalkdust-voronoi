@@ -8,7 +8,8 @@
   <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
   <script src="https://cdn.jsdelivr.net/npm/d3-delaunay@6"></script>
   <link rel="stylesheet" href="styles.css">
-  <script src="sketch.js"></script>
+  <!-- Remove the script from head -->
+  <!-- <script src="sketch.js"></script> -->
 </head>
 <body>
   <div class="container">
@@ -23,7 +24,7 @@
           <label for="layerColoredTiles">Enable:</label>
           <input type="checkbox" id="layerColoredTiles" checked>
           <label for="coloredTilesBlurInput">Blur:</label>
-          <input type="number" id="coloredTilesBlurInput" value="0" min="0">
+          <input type="number" id="coloredTilesBlurInput" value="1" min="0">
           <label for="coloredTilesThresholdInput">Threshold:</label>
           <input type="number" id="coloredTilesThresholdInput" value="128" min="0" max="255">
           <label for="tileColorsInput">Tile Colors (Comma Separated):</label>
@@ -36,13 +37,13 @@
           <label for="layerDots">Enable:</label>
           <input type="checkbox" id="layerDots" checked>
           <label for="dotsColorInput">Color:</label>
-          <input type="text" id="dotsColorInput" value="#FD5901">
+          <input type="text" id="dotsColorInput" value="#F78104">
           <label for="dotsTransparencyInput">Transparency:</label>
           <input type="number" id="dotsTransparencyInput" value="255" min="0" max="255">
           <label for="dotsWeightInput">Weight:</label>
-          <input type="number" id="dotsWeightInput" value="1" min="1">
+          <input type="number" id="dotsWeightInput" value="10" min="1">
           <label for="dotsBlurInput">Blur:</label>
-          <input type="number" id="dotsBlurInput" value="0" min="0">
+          <input type="number" id="dotsBlurInput" value="1" min="0">
           <label for="dotsThresholdInput">Threshold:</label>
           <input type="number" id="dotsThresholdInput" value="128" min="0" max="255">
         </div>
@@ -53,15 +54,15 @@
           <label for="layerDelaunayCircles">Enable:</label>
           <input type="checkbox" id="layerDelaunayCircles" checked>
           <label for="delaunayCirclesBlurInput">Blur:</label>
-          <input type="number" id="delaunayCirclesBlurInput" value="0" min="0">
+          <input type="number" id="delaunayCirclesBlurInput" value="1" min="0">
           <label for="delaunayCirclesThresholdInput">Threshold:</label>
           <input type="number" id="delaunayCirclesThresholdInput" value="128" min="0" max="255">
           <label for="delaunayCircleColorInput">Circle Color:</label>
-          <input type="text" id="delaunayCircleColorInput" value="#0000FF">
+          <input type="text" id="delaunayCircleColorInput" value="#FAAB36">
           <label for="delaunayCircleTransparencyInput">Transparency:</label>
           <input type="number" id="delaunayCircleTransparencyInput" value="255" min="0" max="255">
           <label for="delaunayCircleWeightInput">Weight:</label>
-          <input type="number" id="delaunayCircleWeightInput" value="1" min="1">
+          <input type="number" id="delaunayCircleWeightInput" value="10" min="1">
         </div>
       </div>
       <div class="layer-section">
@@ -70,15 +71,15 @@
           <label for="layerDelaunay">Enable:</label>
           <input type="checkbox" id="layerDelaunay" checked>
           <label for="delaunayBlurInput">Blur:</label>
-          <input type="number" id="delaunayBlurInput" value="0" min="0">
+          <input type="number" id="delaunayBlurInput" value="1" min="0">
           <label for="delaunayThresholdInput">Threshold:</label>
           <input type="number" id="delaunayThresholdInput" value="128" min="0" max="255">
           <label for="delaunayEdgeColorInput">Edge Color:</label>
-          <input type="text" id="delaunayEdgeColorInput" value="#FF0000">
+          <input type="text" id="delaunayEdgeColorInput" value="#249EA0">
           <label for="delaunayEdgeTransparencyInput">Transparency:</label>
           <input type="number" id="delaunayEdgeTransparencyInput" value="255" min="0" max="255">
           <label for="delaunayEdgeWeightInput">Weight:</label>
-          <input type="number" id="delaunayEdgeWeightInput" value="1" min="1">
+          <input type="number" id="delaunayEdgeWeightInput" value="10" min="1">
         </div>
       </div>
       <div class="layer-section">
@@ -87,15 +88,15 @@
           <label for="layerVoronoi">Enable:</label>
           <input type="checkbox" id="layerVoronoi" checked>
           <label for="voronoiEdgesBlurInput">Blur:</label>
-          <input type="number" id="voronoiEdgesBlurInput" value="0" min="0">
+          <input type="number" id="voronoiEdgesBlurInput" value="1" min="0">
           <label for="voronoiEdgesThresholdInput">Threshold:</label>
           <input type="number" id="voronoiEdgesThresholdInput" value="128" min="0" max="255">
           <label for="edgeColorInput">Edge Color:</label>
-          <input type="text" id="edgeColorInput" value="#000000">
+          <input type="text" id="edgeColorInput" value="#008083">
           <label for="edgeTransparencyInput">Transparency:</label>
           <input type="number" id="edgeTransparencyInput" value="255" min="0" max="255">
           <label for="edgeWeightInput">Weight:</label>
-          <input type="number" id="edgeWeightInput" value="1" min="1">
+          <input type="number" id="edgeWeightInput" value="10" min="1">
         </div>
       </div>
       <div class="layer-section">
@@ -104,15 +105,15 @@
           <label for="layerVoronoiFilled">Enable:</label>
           <input type="checkbox" id="layerVoronoiFilled" checked>
           <label for="voronoiFilledBlurInput">Blur:</label>
-          <input type="number" id="voronoiFilledBlurInput" value="0" min="0">
+          <input type="number" id="voronoiFilledBlurInput" value="1" min="0">
           <label for="voronoiFilledThresholdInput">Threshold:</label>
           <input type="number" id="voronoiFilledThresholdInput" value="128" min="0" max="255">
           <label for="voronoiFillColorInput">Fill Color:</label>
-          <input type="text" id="voronoiFillColorInput" value="#000000">
+          <input type="text" id="voronoiFillColorInput" value="#005F60">
           <label for="voronoiFillTransparencyInput">Transparency:</label>
           <input type="number" id="voronoiFillTransparencyInput" value="255" min="0" max="255">
           <label for="voronoiFillWeightInput">Weight:</label>
-          <input type="number" id="voronoiFillWeightInput" value="1" min="1">
+          <input type="number" id="voronoiFillWeightInput" value="10" min="1">
         </div>
       </div>
 
@@ -155,10 +156,136 @@
         <label for="numPointsInput">Number of Points:</label>
         <input type="number" id="numPointsInput" value="10">
       </div>
+
+      <!-- New Layer Controls for Shadows and Screens -->
+      <h3>Additional Layers</h3>
+      
+      <!-- Example for Colored Tiles Layer -->
+      <div class="layer-section">
+        <h4>Colored Tiles Enhancements</h4>
+        <div class="toggle-container">
+          <label for="layerColoredTilesShadow">Shadow Enable:</label>
+          <input type="checkbox" id="layerColoredTilesShadow">
+          <label for="layerColoredTilesShadowColor">Shadow Color:</label>
+          <input type="text" id="layerColoredTilesShadowColor" value="#000000">
+          <label for="layerColoredTilesShadowOpacity">Shadow Opacity:</label>
+          <input type="number" id="layerColoredTilesShadowOpacity" value="128" min="0" max="255">
+          
+          <label for="layerColoredTilesScreen">Screen Enable:</label>
+          <input type="checkbox" id="layerColoredTilesScreen">
+          <label for="layerColoredTilesScreenColor">Screen Color:</label>
+          <input type="text" id="layerColoredTilesScreenColor" value="#FFFFFF">
+          <label for="layerColoredTilesScreenOpacity">Screen Opacity:</label>
+          <input type="number" id="layerColoredTilesScreenOpacity" value="128" min="0" max="255">
+        </div>
+      </div>
+
+      <!-- Example for Dots Layer -->
+      <div class="layer-section">
+        <h4>Dots Enhancements</h4>
+        <div class="toggle-container">
+          <label for="layerDotsShadow">Shadow Enable:</label>
+          <input type="checkbox" id="layerDotsShadow">
+          <label for="layerDotsShadowColor">Shadow Color:</label>
+          <input type="text" id="layerDotsShadowColor" value="#000000">
+          <label for="layerDotsShadowOpacity">Shadow Opacity:</label>
+          <input type="number" id="layerDotsShadowOpacity" value="128" min="0" max="255">
+          
+          <label for="layerDotsScreen">Screen Enable:</label>
+          <input type="checkbox" id="layerDotsScreen">
+          <label for="layerDotsScreenColor">Screen Color:</label>
+          <input type="text" id="layerDotsScreenColor" value="#FFFFFF">
+          <label for="layerDotsScreenOpacity">Screen Opacity:</label>
+          <input type="number" id="layerDotsScreenOpacity" value="128" min="0" max="255">
+        </div>
+      </div>
+
+      <!-- Add similar sections for Delaunay Circles, Delaunay, Voronoi Edges, and Voronoi Filled layers -->
+      <div class="layer-section">
+        <h4>Delaunay Circles Enhancements</h4>
+        <div class="toggle-container">
+          <label for="layerDelaunayCirclesShadow">Shadow Enable:</label>
+          <input type="checkbox" id="layerDelaunayCirclesShadow">
+          <label for="layerDelaunayCirclesShadowColor">Shadow Color:</label>
+          <input type="text" id="layerDelaunayCirclesShadowColor" value="#000000">
+          <label for="layerDelaunayCirclesShadowOpacity">Shadow Opacity:</label>
+          <input type="number" id="layerDelaunayCirclesShadowOpacity" value="128" min="0" max="255">
+          
+          <label for="layerDelaunayCirclesScreen">Screen Enable:</label>
+          <input type="checkbox" id="layerDelaunayCirclesScreen">
+          <label for="layerDelaunayCirclesScreenColor">Screen Color:</label>
+          <input type="text" id="layerDelaunayCirclesScreenColor" value="#FFFFFF">
+          <label for="layerDelaunayCirclesScreenOpacity">Screen Opacity:</label>
+          <input type="number" id="layerDelaunayCirclesScreenOpacity" value="128" min="0" max="255">
+        </div>
+      </div>
+
+      <div class="layer-section">
+        <h4>Delaunay Enhancements</h4>
+        <div class="toggle-container">
+          <label for="layerDelaunayShadow">Shadow Enable:</label>
+          <input type="checkbox" id="layerDelaunayShadow">
+          <label for="layerDelaunayShadowColor">Shadow Color:</label>
+          <input type="text" id="layerDelaunayShadowColor" value="#000000">
+          <label for="layerDelaunayShadowOpacity">Shadow Opacity:</label>
+          <input type="number" id="layerDelaunayShadowOpacity" value="128" min="0" max="255">
+          
+          <label for="layerDelaunayScreen">Screen Enable:</label>
+          <input type="checkbox" id="layerDelaunayScreen">
+          <label for="layerDelaunayScreenColor">Screen Color:</label>
+          <input type="text" id="layerDelaunayScreenColor" value="#FFFFFF">
+          <label for="layerDelaunayScreenOpacity">Screen Opacity:</label>
+          <input type="number" id="layerDelaunayScreenOpacity" value="128" min="0" max="255">
+        </div>
+      </div>
+
+      <div class="layer-section">
+        <h4>Voronoi Edges Enhancements</h4>
+        <div class="toggle-container">
+          <label for="layerVoronoiEdgesShadow">Shadow Enable:</label>
+          <input type="checkbox" id="layerVoronoiEdgesShadow">
+          <label for="layerVoronoiEdgesShadowColor">Shadow Color:</label>
+          <input type="text" id="layerVoronoiEdgesShadowColor" value="#000000">
+          <label for="layerVoronoiEdgesShadowOpacity">Shadow Opacity:</label>
+          <input type="number" id="layerVoronoiEdgesShadowOpacity" value="128" min="0" max="255">
+          
+          <label for="layerVoronoiEdgesScreen">Screen Enable:</label>
+          <input type="checkbox" id="layerVoronoiEdgesScreen">
+          <label for="layerVoronoiEdgesScreenColor">Screen Color:</label>
+          <input type="text" id="layerVoronoiEdgesScreenColor" value="#FFFFFF">
+          <label for="layerVoronoiEdgesScreenOpacity">Screen Opacity:</label>
+          <input type="number" id="layerVoronoiEdgesScreenOpacity" value="128" min="0" max="255">
+        </div>
+      </div>
+
+      <div class="layer-section">
+        <h4>Voronoi Filled Enhancements</h4>
+        <div class="toggle-container">
+          <label for="layerVoronoiFilledShadow">Shadow Enable:</label>
+          <input type="checkbox" id="layerVoronoiFilledShadow">
+          <label for="layerVoronoiFilledShadowColor">Shadow Color:</label>
+          <input type="text" id="layerVoronoiFilledShadowColor" value="#000000">
+          <label for="layerVoronoiFilledShadowOpacity">Shadow Opacity:</label>
+          <input type="number" id="layerVoronoiFilledShadowOpacity" value="128" min="0" max="255">
+          
+          <label for="layerVoronoiFilledScreen">Screen Enable:</label>
+          <input type="checkbox" id="layerVoronoiFilledScreen">
+          <label for="layerVoronoiFilledScreenColor">Screen Color:</label>
+          <input type="text" id="layerVoronoiFilledScreenColor" value="#FFFFFF">
+          <label for="layerVoronoiFilledScreenOpacity">Screen Opacity:</label>
+          <input type="number" id="layerVoronoiFilledScreenOpacity" value="128" min="0" max="255">
+        </div>
+      </div>
+      
+      <!-- ...existing code... -->
     </div>
 
     <div id="canvas-container">
+      <!-- ...existing code... -->
     </div>
+
+    <!-- Move script here -->
+    <script src="sketch.js"></script>
   </div>
 </body>
 </html>

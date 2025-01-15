@@ -3,11 +3,23 @@ let colors = []; // Store cell colors
 let colorIndexes = [];
 let layers = {
   coloredTiles: true,
+  coloredTilesShadow: false,
+  coloredTilesScreen: false,
   dots: true,
+  dotsShadow: false,
+  dotsScreen: false,
   delaunayCircles: true,
+  delaunayCirclesShadow: false,
+  delaunayCirclesScreen: false,
   delaunay: true,
+  delaunayShadow: false,
+  delaunayScreen: false,
   voronoiEdges: true,
-  voronoiFilled: true
+  voronoiEdgesShadow: false,
+  voronoiEdgesScreen: false,
+  voronoiFilled: true,
+  voronoiFilledShadow: false,
+  voronoiFilledScreen: false
 };
 let currentEditingLayer = 'coloredTiles';
 let exportScale = 1;
@@ -25,11 +37,23 @@ function setup() {
 
   // Initialize buffers for each layer
   buffers.coloredTiles = createGraphics(width, height, WEBGL);
+  buffers.coloredTilesShadow = createGraphics(width, height, WEBGL);
+  buffers.coloredTilesScreen = createGraphics(width, height, WEBGL);
   buffers.dots = createGraphics(width, height, WEBGL);
+  buffers.dotsShadow = createGraphics(width, height, WEBGL);
+  buffers.dotsScreen = createGraphics(width, height, WEBGL);
   buffers.delaunayCircles = createGraphics(width, height, WEBGL);
+  buffers.delaunayCirclesShadow = createGraphics(width, height, WEBGL);
+  buffers.delaunayCirclesScreen = createGraphics(width, height, WEBGL);
   buffers.delaunay = createGraphics(width, height, WEBGL);
+  buffers.delaunayShadow = createGraphics(width, height, WEBGL);
+  buffers.delaunayScreen = createGraphics(width, height, WEBGL);
   buffers.voronoiEdges = createGraphics(width, height, WEBGL);
+  buffers.voronoiEdgesShadow = createGraphics(width, height, WEBGL);
+  buffers.voronoiEdgesScreen = createGraphics(width, height, WEBGL);
   buffers.voronoiFilled = createGraphics(width, height, WEBGL);
+  buffers.voronoiFilledShadow = createGraphics(width, height, WEBGL);
+  buffers.voronoiFilledScreen = createGraphics(width, height, WEBGL);
 
   // Initialize event listeners
   document.getElementById('generateNewPointsButton').addEventListener('click', generateRandomPoints);
@@ -43,7 +67,35 @@ function setup() {
   document.getElementById('editingLayer').addEventListener('change', (e) => currentEditingLayer = e.target.value);
   document.getElementById('exportSize').addEventListener('change', (e) => exportScale = parseInt(e.target.value));
 
+  // New layer event listeners for shadows and screens
+  ['coloredTiles', 'dots', 'delaunayCircles', 'delaunay', 'voronoiEdges', 'voronoiFilled'].forEach(layer => {
+    const capitalizeLayer = capitalize(layer);
+
+    // Shadow controls
+    const shadowToggle = document.getElementById(`layer${capitalizeLayer}Shadow`);
+    const shadowColorInput = document.getElementById(`layer${capitalizeLayer}ShadowColor`);
+    const shadowOpacityInput = document.getElementById(`layer${capitalizeLayer}ShadowOpacity`);
+
+    shadowToggle.addEventListener('change', (e) => layers[`${layer}Shadow`] = e.target.checked);
+    shadowColorInput.addEventListener('input', (e) => layers[`${layer}ShadowColor`] = e.target.value.trim());
+    shadowOpacityInput.addEventListener('change', (e) => layers[`${layer}ShadowOpacity`] = parseInt(e.target.value) || 128);
+
+    // Screen controls
+    const screenToggle = document.getElementById(`layer${capitalizeLayer}Screen`);
+    const screenColorInput = document.getElementById(`layer${capitalizeLayer}ScreenColor`);
+    const screenOpacityInput = document.getElementById(`layer${capitalizeLayer}ScreenOpacity`);
+
+    screenToggle.addEventListener('change', (e) => layers[`${layer}Screen`] = e.target.checked);
+    screenColorInput.addEventListener('input', (e) => layers[`${layer}ScreenColor`] = e.target.value.trim());
+    screenOpacityInput.addEventListener('change', (e) => layers[`${layer}ScreenOpacity`] = parseInt(e.target.value) || 128);
+  });
+
   generateRandomPoints();
+}
+
+// Helper function to capitalize layer names
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 function getTilePalette() {
@@ -56,15 +108,15 @@ function getVoronoiEdgeColor() {
 }
 
 function getDelaunayEdgeColor() {
-  return (document.getElementById('delaunayEdgeColorInput').value || '#FF0000').trim();
+  return (document.getElementById('delaunayEdgeColorInput').value || '#249EA0').trim(); // Changed to allowed color
 }
 
 function getDelaunayCircleColor() {
-  return (document.getElementById('delaunayCircleColorInput').value || '#0000FF').trim();
+  return (document.getElementById('delaunayCircleColorInput').value || '#249EA0').trim(); // Ensured to be allowed color
 }
 
 function getVoronoiFillColor() {
-  return (document.getElementById('voronoiFillColorInput').value || '#000000').trim();
+  return (document.getElementById('voronoiFillColorInput').value || '#FFFFFF').trim();
 }
 
 function getEdgeTransparency() {
@@ -172,51 +224,90 @@ function draw() {
   let delaunay = d3.Delaunay.from(points);
   let voronoi = delaunay.voronoi([0, 0, width, height]);
 
-  if (layers.coloredTiles) {
-    drawColoredTiles(voronoi, buffers.coloredTiles);
-    // applyBlurAndThreshold(buffers.coloredTiles, 'coloredTiles');
-    tint(255, getEdgeTransparency());
-    texture(buffers.coloredTiles);
-    plane(width, height);
-  }
-  if (layers.dots) {
-    drawDots(buffers.dots);
-    applyBlurAndThreshold(buffers.dots, 'dots');
-    tint(255, getDotsTransparency());
-    texture(buffers.dots);
-    plane(width, height);
-  }
-  if (layers.delaunayCircles) {
-    drawDelaunayCircles(delaunay, buffers.delaunayCircles);
-    applyBlurAndThreshold(buffers.delaunayCircles, 'delaunayCircles');
-    tint(255, getDelaunayCircleTransparency());
-    texture(buffers.delaunayCircles);
-    plane(width, height);
-  }
-  if (layers.delaunay) {
-    drawDelaunay(delaunay, buffers.delaunay);
-    applyBlurAndThreshold(buffers.delaunay, 'delaunay');
-    tint(255, getDelaunayEdgeTransparency());
-    texture(buffers.delaunay);
-    plane(width, height);
-  }
-  drawVoronoiEdges(voronoi, buffers.voronoiEdges);
-  applyBlurAndThreshold(buffers.voronoiEdges, 'voronoiEdges');
-  if (layers.voronoiEdges) {
-    tint(255, getEdgeTransparency());
-    texture(buffers.voronoiEdges);
-    plane(width, height);
-  }
-  if (layers.voronoiFilled) {
-    drawVoronoiFilled(voronoi, buffers.voronoiFilled);
-    buffers.voronoiFilled.noStroke();
-    buffers.voronoiFilled.texture(buffers.voronoiEdges);
-    buffers.voronoiFilled.plane(width, height);
-    applyBlurAndThreshold(buffers.voronoiFilled, 'voronoiFilled');
-    tint(255, getVoronoiFillTransparency());
-    texture(buffers.voronoiFilled);
-    plane(width, height);
-  }
+  ['coloredTiles', 'dots', 'delaunayCircles', 'delaunay', 'voronoiEdges', 'voronoiFilled'].forEach(layer => {
+    // Render main layer
+    if (layers[layer]) {
+      if (layer === 'coloredTiles') {
+        drawColoredTiles(voronoi, buffers.coloredTiles);
+        // applyBlurAndThreshold(buffers.coloredTiles, 'coloredTiles');
+        tint(255, getEdgeTransparency());
+        texture(buffers.coloredTiles);
+        plane(width, height);
+      }
+      if (layer === 'dots') {
+        drawDots(buffers.dots);
+        applyBlurAndThreshold(buffers.dots, 'dots');
+        tint(255, getDotsTransparency());
+        texture(buffers.dots);
+        plane(width, height);
+      }
+      if (layer === 'delaunayCircles') {
+        drawDelaunayCircles(delaunay, buffers.delaunayCircles);
+        applyBlurAndThreshold(buffers.delaunayCircles, 'delaunayCircles');
+        tint(255, getDelaunayCircleTransparency());
+        texture(buffers.delaunayCircles);
+        plane(width, height);
+      }
+      if (layer === 'delaunay') {
+        drawDelaunay(delaunay, buffers.delaunay);
+        applyBlurAndThreshold(buffers.delaunay, 'delaunay');
+        tint(255, getDelaunayEdgeTransparency());
+        texture(buffers.delaunay);
+        plane(width, height);
+      }
+  
+      if (layer === 'voronoiEdges') {
+        drawVoronoiEdges(voronoi, buffers.voronoiEdges);
+        applyBlurAndThreshold(buffers.voronoiEdges, 'voronoiEdges');
+        tint(255, getEdgeTransparency());
+        texture(buffers.voronoiEdges);
+        plane(width, height);
+      }
+      if (layer === 'voronoiFilled') {
+        drawVoronoiEdges(voronoi, buffers.voronoiEdges);
+        applyBlurAndThreshold(buffers.voronoiEdges, 'voronoiEdges');
+        drawVoronoiFilled(voronoi, buffers.voronoiFilled);
+        buffers.voronoiFilled.noStroke();
+        buffers.voronoiFilled.texture(buffers.voronoiEdges);
+        buffers.voronoiFilled.plane(width, height);
+        applyBlurAndThreshold(buffers.voronoiFilled, 'voronoiFilled');
+        tint(255, getVoronoiFillTransparency());
+        texture(buffers.voronoiFilled);
+        plane(width, height);
+      }
+    }
+
+    // Render screen
+    if (layers[`${layer}Screen`]) {
+      buffers[`${layer}Screen`].clear();
+
+      let sc = getScreenColor(layer); // returns a string like '#FFFFFF'
+      let so = getScreenOpacity(layer); // returns a number like 128
+      let c = color(sc);
+      c.setAlpha(so);
+      buffers[`${layer}Screen`].background(c);
+
+      // Blend mode so the screen layer doesn’t override color below
+      push();
+      blendMode(SCREEN);
+      buffers[`${layer}Screen`].tint(255, so);
+      texture(buffers[`${layer}Screen`]);
+      plane(width, height);
+      pop();
+    }
+
+    // Render shadow
+    if (layers[`${layer}Shadow`]) {
+      buffers[`${layer}Shadow`].clear();
+      buffers[`${layer}Shadow`].image(buffers[layer], 0, 0);
+      buffers[`${layer}Shadow`].filter(BLUR, getShadowBlur(layer));
+      // Optionally apply a threshold here with your existing logic:
+      // applyBlurAndThreshold(buffers[`${layer}Shadow`], `${layer}Shadow`);
+      buffers[`${layer}Shadow`].tint(255, getShadowOpacity(layer));
+      texture(buffers[`${layer}Shadow`]);
+      plane(width, height);
+    }
+  });
 }
 
 function generateRandomPoints() {
@@ -240,7 +331,7 @@ function drawColoredTiles(voronoi, buffer) {
   for (let i = 0; i < points.length; i++) {
     let polygon = voronoi.cellPolygon(i);
     if (!polygon) continue;
-    buffer.fill(palette[colorIndexes[i]] || '#CCCCCC');
+    buffer.fill(palette[colorIndexes[i]] || '#FAAB36'); // Changed fallback color to allowed color
     buffer.noStroke();
     buffer.beginShape();
     polygon.forEach(([x, y]) => buffer.vertex(x, y));
@@ -398,6 +489,8 @@ function mousePressed() {
     if (selectedDotIndex === null) {
       points.push([mouseX, mouseY]);
       colors.push([random(255), random(255), random(255), 100]);
+      colorIndexes.push(floor(random(getTilePalette().length))); // Add corresponding color index
+      draw(); // Redraw to update layers
     }
   }
   if (currentEditingLayer === 'coloredTiles') {
@@ -439,4 +532,29 @@ function mouseReleased() {
   }
 }
 
-setup();
+function getShadowOpacity(layer) {
+  return layers[`${layer}ShadowOpacity`] || 128;
+}
+
+function getScreenColor(layer) {
+  return layers[`${layer}ScreenColor`] || '#FFFFFF';
+}
+
+function getScreenOpacity(layer) {
+  return layers[`${layer}ScreenOpacity`] || 128;
+}
+
+function getShadowBlur(layer) {
+  // You could expose a shadow blur input in your HTML,
+  // or default to 10 for demonstration.
+  return 10;
+}
+
+function getShadowThreshold(layer) {
+  // Similarly, expose a shadow threshold input in your HTML or default to 0.
+  return 0;
+}
+
+// setup();
+// setup();
+

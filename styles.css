@@ -102,3 +102,6 @@ select, input[type="number"], input[type="text"] {
 .toggle-container input[type="number"] {
   width: 100%;
 }
+
+/* Additional Styles for Shadows and Screens (optional) */
+/* You can add specific styles if needed */
