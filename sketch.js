@@ -29,9 +29,30 @@ let offsetX = 0;
 let offsetY = 0;
 let filledCells = [];
 let buffers = {};
+let needsRedraw = {
+  coloredTiles: true,
+  dots: true,
+  delaunayCircles: true,
+  delaunay: true,
+  voronoiEdges: true,
+  voronoiFilled: true,
+  coloredTilesShadow: true,
+  dotsShadow: true,
+  delaunayCirclesShadow: true,
+  delaunayShadow: true,
+  voronoiEdgesShadow: true,
+  voronoiFilledShadow: true,
+  coloredTilesScreen: true,
+  dotsScreen: true,
+  delaunayCirclesScreen: true,
+  delaunayScreen: true,
+  voronoiEdgesScreen: true,
+  voronoiFilledScreen: true
+};
 
 function setup() {
   createCanvas(width, height);
+  noLoop(); // Stop continuous rendering
   noStroke()
   const container = document.getElementById('canvas-container');
 
@@ -58,12 +79,30 @@ function setup() {
   // Initialize event listeners
   document.getElementById('generateNewPointsButton').addEventListener('click', generateRandomPoints);
   document.getElementById('exportImageButton').addEventListener('click', exportImage);
-  document.getElementById('layerColoredTiles').addEventListener('change', (e) => layers.coloredTiles = e.target.checked);
-  document.getElementById('layerDots').addEventListener('change', (e) => layers.dots = e.target.checked);
-  document.getElementById('layerDelaunayCircles').addEventListener('change', (e) => layers.delaunayCircles = e.target.checked);
-  document.getElementById('layerDelaunay').addEventListener('change', (e) => layers.delaunay = e.target.checked);
-  document.getElementById('layerVoronoi').addEventListener('change', (e) => layers.voronoiEdges = e.target.checked);
-  document.getElementById('layerVoronoiFilled').addEventListener('change', (e) => layers.voronoiFilled = e.target.checked);
+  document.getElementById('layerColoredTiles').addEventListener('change', (e) => {
+    layers.coloredTiles = e.target.checked;
+    requestRedraw('coloredTiles');
+  });
+  document.getElementById('layerDots').addEventListener('change', (e) => {
+    layers.dots = e.target.checked;
+    requestRedraw('dots');
+  });
+  document.getElementById('layerDelaunayCircles').addEventListener('change', (e) => {
+    layers.delaunayCircles = e.target.checked;
+    requestRedraw('delaunayCircles');
+  });
+  document.getElementById('layerDelaunay').addEventListener('change', (e) => {
+    layers.delaunay = e.target.checked;
+    requestRedraw('delaunay');
+  });
+  document.getElementById('layerVoronoi').addEventListener('change', (e) => {
+    layers.voronoiEdges = e.target.checked;
+    requestRedraw('voronoiEdges');
+  });
+  document.getElementById('layerVoronoiFilled').addEventListener('change', (e) => {
+    layers.voronoiFilled = e.target.checked;
+    requestRedraw('voronoiFilled');
+  });
   document.getElementById('editingLayer').addEventListener('change', (e) => currentEditingLayer = e.target.value);
   document.getElementById('exportSize').addEventListener('change', (e) => exportScale = parseInt(e.target.value));
 
@@ -76,18 +115,36 @@ function setup() {
     const shadowColorInput = document.getElementById(`layer${capitalizeLayer}ShadowColor`);
     const shadowOpacityInput = document.getElementById(`layer${capitalizeLayer}ShadowOpacity`);
 
-    shadowToggle.addEventListener('change', (e) => layers[`${layer}Shadow`] = e.target.checked);
-    shadowColorInput.addEventListener('input', (e) => layers[`${layer}ShadowColor`] = e.target.value.trim());
-    shadowOpacityInput.addEventListener('change', (e) => layers[`${layer}ShadowOpacity`] = parseInt(e.target.value) || 128);
+    shadowToggle.addEventListener('change', (e) => {
+      layers[`${layer}Shadow`] = e.target.checked;
+      requestRedraw(`${layer}Shadow`);
+    });
+    shadowColorInput.addEventListener('input', (e) => {
+      layers[`${layer}ShadowColor`] = e.target.value.trim();
+      requestRedraw(`${layer}Shadow`);
+    });
+    shadowOpacityInput.addEventListener('change', (e) => {
+      layers[`${layer}ShadowOpacity`] = parseInt(e.target.value) || 128;
+      requestRedraw(`${layer}Shadow`);
+    });
 
     // Screen controls
     const screenToggle = document.getElementById(`layer${capitalizeLayer}Screen`);
     const screenColorInput = document.getElementById(`layer${capitalizeLayer}ScreenColor`);
     const screenOpacityInput = document.getElementById(`layer${capitalizeLayer}ScreenOpacity`);
 
-    screenToggle.addEventListener('change', (e) => layers[`${layer}Screen`] = e.target.checked);
-    screenColorInput.addEventListener('input', (e) => layers[`${layer}ScreenColor`] = e.target.value.trim());
-    screenOpacityInput.addEventListener('change', (e) => layers[`${layer}ScreenOpacity`] = parseInt(e.target.value) || 128);
+    screenToggle.addEventListener('change', (e) => {
+      layers[`${layer}Screen`] = e.target.checked;
+      requestRedraw(`${layer}Screen`);
+    });
+    screenColorInput.addEventListener('input', (e) => {
+      layers[`${layer}ScreenColor`] = e.target.value.trim();
+      requestRedraw(`${layer}Screen`);
+    });
+    screenOpacityInput.addEventListener('change', (e) => {
+      layers[`${layer}ScreenOpacity`] = parseInt(e.target.value) || 128;
+      requestRedraw(`${layer}Screen`);
+    });
   });
 
   generateRandomPoints();
@@ -180,35 +237,29 @@ function applyBlurAndThreshold(buffer, layer) {
   }
 
   buffer.loadPixels();
-  let fillColor;
-  if (layer === 'coloredTiles') {
-    fillColor = color(getTilePalette()[0]);
-  } else if (layer === 'dots') {
-    fillColor = color(getDotsColor());
-  } else if (layer === 'delaunayCircles') {
-    fillColor = color(getDelaunayCircleColor());
-  } else if (layer === 'delaunay') {
-    fillColor = color(getDelaunayEdgeColor());
-  } else if (layer === 'voronoiEdges') {
-    fillColor = color(getVoronoiEdgeColor());
-  } else if (layer === 'voronoiFilled') {
-    fillColor = color(getVoronoiFillColor());
-  }
-  let r = fillColor.levels[0];
-  let g = fillColor.levels[1];
-  let b = fillColor.levels[2];
 
   for (let i = 0; i < buffer.pixels.length; i += 4) {
     let alpha = buffer.pixels[i + 3];
     if (alpha > thresholdAmount) {
-      buffer.pixels[i] = r;
-      buffer.pixels[i + 1] = g;
-      buffer.pixels[i + 2] = b;
-      buffer.pixels[i + 3] = 255;
+      if (layer === 'coloredTiles') {
+        // Do not change RGB, only ensure alpha is fully opaque
+        buffer.pixels[i + 3] = 255;
+      } else {
+        let fillColor = color(
+          layer === 'dots' ? getDotsColor() :
+          layer === 'delaunayCircles' ? getDelaunayCircleColor() :
+          layer === 'delaunay' ? getDelaunayEdgeColor() :
+          layer === 'voronoiEdges' ? getVoronoiEdgeColor() :
+          layer === 'voronoiFilled' ? getVoronoiFillColor() :
+          '#FFFFFF' // Fallback color
+        );
+        buffer.pixels[i] = red(fillColor);
+        buffer.pixels[i + 1] = green(fillColor);
+        buffer.pixels[i + 2] = blue(fillColor);
+        buffer.pixels[i + 3] = 255;
+      }
     } else {
-      buffer.pixels[i] = r;
-      buffer.pixels[i + 1] = g;
-      buffer.pixels[i + 2] = b;
+      // Set alpha to 0 to make it transparent
       buffer.pixels[i + 3] = 0;
     }
   }
@@ -220,85 +271,248 @@ function isMouseInCanvas() {
 }
 
 function draw() {
-  background(255, 255, 255, 0); // Fully transparent background
+  background(255, 255, 255, 0);
+  updateAllLayers();
+  drawAllLayers();
+}
+
+// Update the requestRedraw function to handle dependencies
+function requestRedraw(layer) {
+  needsRedraw[layer] = true;
+
+  // Mark shadow and screen layers for the changed layer
+  const shadowLayer = `${layer}Shadow`;
+  const screenLayer = `${layer}Screen`;
+
+  if (layers[shadowLayer]) {
+    needsRedraw[shadowLayer] = true;
+  }
+  if (layers[screenLayer]) {
+    needsRedraw[screenLayer] = true;
+  }
+
+  // If 'dots' layer is changed, mark all layers as needing redraw
+  if (layer === 'dots') {
+    Object.keys(layers).forEach(l => {
+      needsRedraw[l] = true;
+    });
+  }
+
+  redraw();
+}
+
+function updateAllLayers() {
   let delaunay = d3.Delaunay.from(points);
   let voronoi = delaunay.voronoi([0, 0, width, height]);
 
-  ['coloredTiles', 'dots', 'delaunayCircles', 'delaunay', 'voronoiEdges', 'voronoiFilled'].forEach(layer => {
-    // Render main layer
-    if (layers[layer]) {
-      if (layer === 'coloredTiles') {
-        drawColoredTiles(voronoi, buffers.coloredTiles);
-        // applyBlurAndThreshold(buffers.coloredTiles, 'coloredTiles');
-        tint(255, getEdgeTransparency());
-        image(buffers.coloredTiles, 0, 0);
-      }
-      if (layer === 'dots') {
-        drawDots(buffers.dots);
-        applyBlurAndThreshold(buffers.dots, 'dots');
-        tint(255, getDotsTransparency());
-        image(buffers.dots, 0, 0);
-      }
-      if (layer === 'delaunayCircles') {
-        drawDelaunayCircles(delaunay, buffers.delaunayCircles);
-        applyBlurAndThreshold(buffers.delaunayCircles, 'delaunayCircles');
-        tint(255, getDelaunayCircleTransparency());
-        image(buffers.delaunayCircles, 0, 0);
-      }
-      if (layer === 'delaunay') {
-        drawDelaunay(delaunay, buffers.delaunay);
-        applyBlurAndThreshold(buffers.delaunay, 'delaunay');
-        tint(255, getDelaunayEdgeTransparency());
-        image(buffers.delaunay, 0, 0);
-      }
-  
-      if (layer === 'voronoiEdges') {
-        drawVoronoiEdges(voronoi, buffers.voronoiEdges);
-        applyBlurAndThreshold(buffers.voronoiEdges, 'voronoiEdges');
-        tint(255, getEdgeTransparency());
-        image(buffers.voronoiEdges, 0, 0);
-      }
-      if (layer === 'voronoiFilled') {
-        drawVoronoiEdges(voronoi, buffers.voronoiEdges);
-        applyBlurAndThreshold(buffers.voronoiEdges, 'voronoiEdges');
-        drawVoronoiFilled(voronoi, buffers.voronoiFilled);
-        buffers.voronoiFilled.noStroke();
-        buffers.voronoiFilled.image(buffers.voronoiEdges, 0, 0);
-        applyBlurAndThreshold(buffers.voronoiFilled, 'voronoiFilled');
-        tint(255, getVoronoiFillTransparency());
-        image(buffers.voronoiFilled, 0, 0);
-      }
-    }
+  // MAIN geometry
+  if (needsRedraw.coloredTiles && layers.coloredTiles) {
+    drawColoredTiles(voronoi, buffers.coloredTiles);
+    applyBlurAndThreshold(buffers.coloredTiles, 'coloredTiles');
+    needsRedraw.coloredTiles = false;
+  }
+  if (needsRedraw.dots && layers.dots) {
+    drawDots(buffers.dots);
+    applyBlurAndThreshold(buffers.dots, 'dots');
+    needsRedraw.dots = false;
+  }
+  if (needsRedraw.delaunayCircles && layers.delaunayCircles) {
+    drawDelaunayCircles(delaunay, buffers.delaunayCircles);
+    applyBlurAndThreshold(buffers.delaunayCircles, 'delaunayCircles');
+    needsRedraw.delaunayCircles = false;
+  }
+  if (needsRedraw.delaunay && layers.delaunay) {
+    drawDelaunay(delaunay, buffers.delaunay);
+    applyBlurAndThreshold(buffers.delaunay, 'delaunay');
+    needsRedraw.delaunay = false;
+  }
+  if (needsRedraw.voronoiEdges && layers.voronoiEdges) {
+    drawVoronoiEdges(voronoi, buffers.voronoiEdges);
+    applyBlurAndThreshold(buffers.voronoiEdges, 'voronoiEdges');
+    needsRedraw.voronoiEdges = false;
+  }
+  if (needsRedraw.voronoiFilled && layers.voronoiFilled) {
+    drawVoronoiEdges(voronoi, buffers.voronoiEdges); // ...existing code...
+    drawVoronoiFilled(voronoi, buffers.voronoiFilled);
+    buffers.voronoiFilled.noStroke();
+    buffers.voronoiFilled.image(buffers.voronoiEdges, 0, 0);
+    applyBlurAndThreshold(buffers.voronoiFilled, 'voronoiFilled');
+    needsRedraw.voronoiFilled = false;
+  }
 
-    // Render screen
-    if (layers[`${layer}Screen`]) {
-      buffers[`${layer}Screen`].clear();
-
-      let sc = getScreenColor(layer); // returns a string like '#FFFFFF'
-      let so = getScreenOpacity(layer); // returns a number like 128
-      let c = color(sc);
-      c.setAlpha(so);
-      buffers[`${layer}Screen`].background(c);
-
-      // Blend mode so the screen layer doesn’t override color below
-      push();
-      blendMode(SCREEN);
-      buffers[`${layer}Screen`].tint(255, so);
-      image(buffers[`${layer}Screen`], 0, 0);
-      pop();
-    }
-
-    // Render shadow
-    if (layers[`${layer}Shadow`]) {
-      buffers[`${layer}Shadow`].clear();
-      buffers[`${layer}Shadow`].image(buffers[layer], 0, 0);
-      buffers[`${layer}Shadow`].filter(BLUR, getShadowBlur(layer));
-      // Optionally apply a threshold here with your existing logic:
-      // applyBlurAndThreshold(buffers[`${layer}Shadow`], `${layer}Shadow`);
-      buffers[`${layer}Shadow`].tint(255, getShadowOpacity(layer));
-      image(buffers[`${layer}Shadow`], 0, 0);
+  // SCREEN buffers
+  ['coloredTiles','dots','delaunayCircles','delaunay','voronoiEdges','voronoiFilled'].forEach(layer => {
+    if (needsRedraw[`${layer}Screen`] && layers[`${layer}Screen`]) {
+      let sc = getScreenColor(layer);
+      let so = getScreenOpacity(layer);
+      buffers[`${layer}Screen`].image(buffers[layer], 0, 0);
+      buffers[`${layer}Screen`].push();
+      buffers[`${layer}Screen`].blendMode(SCREEN);
+      let overlayColor = color(sc);
+      overlayColor.setAlpha(so);
+      buffers[`${layer}Screen`].noStroke();
+      buffers[`${layer}Screen`].fill(overlayColor);
+      buffers[`${layer}Screen`].rect(0, 0, width, height);
+      buffers[`${layer}Screen`].pop();
+      needsRedraw[`${layer}Screen`] = false;
     }
   });
+
+  // SHADOW buffers
+  ['coloredTiles','dots','delaunayCircles','delaunay','voronoiEdges','voronoiFilled'].forEach(layer => {
+    const blurAmount = getShadowBlur(layer);
+    if (blurAmount > 0 && layers[`${layer}Shadow`]) {
+      // Clear the shadow buffer
+      buffers[`${layer}Shadow`].clear();
+
+      // Copy main buffer
+      buffers[`${layer}Shadow`].image(buffers[layer], 0, 0);
+      // Apply blur
+      buffers[`${layer}Shadow`].filter(BLUR, blurAmount);
+
+      // Set RGB to shadowColor by manipulating pixels
+      buffers[`${layer}Shadow`].loadPixels();
+      let shadowClr = color(layers[`${layer}ShadowColor`] || '#000000');
+      for (let i = 0; i < buffers[`${layer}Shadow`].pixels.length; i += 4) {
+        buffers[`${layer}Shadow`].pixels[i] = red(shadowClr);     // Red
+        buffers[`${layer}Shadow`].pixels[i + 1] = green(shadowClr); // Green
+        buffers[`${layer}Shadow`].pixels[i + 2] = blue(shadowClr);  // Blue
+        // Alpha remains unchanged from the blurred buffer
+      }
+      buffers[`${layer}Shadow`].updatePixels();
+
+      needsRedraw[`${layer}Shadow`] = false;
+    } else {
+      // If blur is 0 or shadow is disabled, clear the shadow buffer
+      buffers[`${layer}Shadow`].clear();
+    }
+  });
+}
+
+// Composite in order from bottom to top
+function drawAllLayers() {
+  // Colored Tiles
+  if (layers.coloredTilesShadow) {
+    // Use shadowAlpha when drawing the shadow buffer
+    tint(255, layers.coloredTilesShadowOpacity);
+    image(buffers.coloredTilesShadow, 0, 0);
+    noTint();
+  }
+  if (layers.coloredTiles) {
+    tint(255, getLayerOpacity('coloredTiles'));
+    image(buffers.coloredTiles, 0, 0);
+    noTint();
+  }
+  if (layers.coloredTilesScreen) {
+    tint(255, layers.coloredTilesScreenOpacity);
+    image(buffers.coloredTilesScreen, 0, 0);
+    noTint();
+  }
+
+  // Dots
+  if (layers.dotsShadow) {
+    tint(255, layers.dotsShadowOpacity);
+    image(buffers.dotsShadow, 0, 0);
+    noTint();
+  }
+  if (layers.dots) {
+    tint(255, getLayerOpacity('dots'));
+    image(buffers.dots, 0, 0);
+    noTint();
+  }
+  if (layers.dotsScreen) {
+    tint(255, layers.dotsScreenOpacity);
+    image(buffers.dotsScreen, 0, 0);
+    noTint();
+  }
+
+  // Delaunay Circles
+  if (layers.delaunayCirclesShadow) {
+    tint(255, layers.delaunayCirclesShadowOpacity);
+    image(buffers.delaunayCirclesShadow, 0, 0);
+    noTint();
+  }
+  if (layers.delaunayCircles) {
+    tint(255, getLayerOpacity('delaunayCircles'));
+    image(buffers.delaunayCircles, 0, 0);
+    noTint();
+  }
+  if (layers.delaunayCirclesScreen) {
+    tint(255, layers.delaunayCirclesScreenOpacity);
+    image(buffers.delaunayCirclesScreen, 0, 0);
+    noTint();
+  }
+
+  // Delaunay Triangulation
+  if (layers.delaunayShadow) {
+    tint(255, layers.delaunayShadowOpacity);
+    image(buffers.delaunayShadow, 0, 0);
+    noTint();
+  }
+  if (layers.delaunay) {
+    tint(255, getLayerOpacity('delaunay'));
+    image(buffers.delaunay, 0, 0);
+    noTint();
+  }
+  if (layers.delaunayScreen) {
+    tint(255, layers.delaunayScreenOpacity);
+    image(buffers.delaunayScreen, 0, 0);
+    noTint();
+  }
+
+  // Voronoi Edges
+  if (layers.voronoiEdgesShadow) {
+    tint(255, layers.voronoiEdgesShadowOpacity);
+    image(buffers.voronoiEdgesShadow, 0, 0);
+    noTint();
+  }
+  if (layers.voronoiEdges) {
+    tint(255, getLayerOpacity('voronoiEdges'));
+    image(buffers.voronoiEdges, 0, 0);
+    noTint();
+  }
+  if (layers.voronoiEdgesScreen) {
+    tint(255, layers.voronoiEdgesScreenOpacity);
+    image(buffers.voronoiEdgesScreen, 0, 0);
+    noTint();
+  }
+
+  // Voronoi Filled
+  if (layers.voronoiFilledShadow) {
+    tint(255, layers.voronoiFilledShadowOpacity);
+    image(buffers.voronoiFilledShadow, 0, 0);
+    noTint();
+  }
+  if (layers.voronoiFilled) {
+    tint(255, getLayerOpacity('voronoiFilled'));
+    image(buffers.voronoiFilled, 0, 0);
+    noTint();
+  }
+  if (layers.voronoiFilledScreen) {
+    tint(255, layers.voronoiFilledScreenOpacity);
+    image(buffers.voronoiFilledScreen, 0, 0);
+    noTint();
+  }
+}
+
+// Add a helper function to get layer opacity
+function getLayerOpacity(layer) {
+  switch(layer) {
+    case 'coloredTiles':
+      return 255
+    case 'dots':
+      return getDotsTransparency();
+    case 'delaunayCircles':
+      return getDelaunayCircleTransparency();
+    case 'delaunay':
+      return getDelaunayEdgeTransparency();
+    case 'voronoiEdges':
+      return getEdgeTransparency();
+    case 'voronoiFilled':
+      return getVoronoiFillTransparency();
+    default:
+      return 255;
+  }
 }
 
 function generateRandomPoints() {
@@ -311,7 +525,12 @@ function generateRandomPoints() {
     // Assign a random index from the palette
     colorIndexes.push(floor(random(palette.length)));
   }
-  draw();
+  requestRedraw('coloredTiles'); // Instead of draw()
+  requestRedraw('dots');
+  requestRedraw('delaunayCircles');
+  requestRedraw('delaunay');
+  requestRedraw('voronoiEdges');
+  requestRedraw('voronoiFilled');
 }
 
 function drawColoredTiles(voronoi, buffer) {
@@ -444,7 +663,7 @@ function handleLayerEditing() {
       console.log(filledCells)
       if (clickedIndex >= 0 && !filledCells.includes(clickedIndex)) {
         filledCells.push(clickedIndex);
-        draw();
+        requestRedraw('voronoiFilled');
       }
       break;
     // Add other cases for different layers
@@ -475,7 +694,7 @@ function mousePressed() {
       points.push([mouseX, mouseY]);
       colors.push([random(255), random(255), random(255), 100]);
       colorIndexes.push(floor(random(getTilePalette().length))); // Add corresponding color index
-      draw(); // Redraw to update layers
+      requestRedraw('dots'); // Redraw to update layers
     }
   }
   if (currentEditingLayer === 'coloredTiles') {
@@ -484,7 +703,7 @@ function mousePressed() {
     if (clickedIndex >= 0) {
       let palette = getTilePalette();
       colorIndexes[clickedIndex] = (colorIndexes[clickedIndex] + 1) % palette.length;
-      draw();
+      requestRedraw('coloredTiles');
     }
   }
   if (currentEditingLayer === 'voronoiFilled') {
@@ -493,10 +712,10 @@ function mousePressed() {
       console.log(filledCells)
       if (clickedIndex >= 0 && !filledCells.includes(clickedIndex)) {
         filledCells.push(clickedIndex);
-        draw();
+        requestRedraw('voronoiFilled');
       } else if (clickedIndex >= 0 && filledCells.includes(clickedIndex)) {
         filledCells = filledCells.filter(cell => cell !== clickedIndex);
-        draw();
+        requestRedraw('voronoiFilled');
       }
     }
 }
@@ -506,6 +725,7 @@ function mouseDragged() {
 
   if (currentEditingLayer === 'dots' && selectedDotIndex !== null) {
     points[selectedDotIndex] = [mouseX + offsetX, mouseY + offsetY];
+    requestRedraw('dots');
   }
 }
 
