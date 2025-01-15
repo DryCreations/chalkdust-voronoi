@@ -11,7 +11,7 @@ let layers = {
 };
 let currentEditingLayer = 'coloredTiles';
 let exportScale = 1;
-let width = 800, height = 600;
+let width = 800, height = 1200;
 let selectedDotIndex = null;
 let offsetX = 0;
 let offsetY = 0;
@@ -19,7 +19,7 @@ let filledCells = [];
 let buffers = {};
 
 function setup() {
-  createCanvas(800, 600, WEBGL);
+  createCanvas(width, height, WEBGL);
   noStroke()
   const container = document.getElementById('canvas-container');
 
@@ -111,6 +111,58 @@ function getDotsWeight() {
   return parseInt(document.getElementById('dotsWeightInput').value) || 1;
 }
 
+function getBlurAmount(layer) {
+  return parseInt(document.getElementById(`${layer}BlurInput`).value) || 0;
+}
+
+function getThresholdAmount(layer) {
+  return parseInt(document.getElementById(`${layer}ThresholdInput`).value) || 128;
+}
+
+function applyBlurAndThreshold(buffer, layer) {
+  let blurAmount = getBlurAmount(layer);
+  let thresholdAmount = getThresholdAmount(layer);
+
+  if (blurAmount > 0) {
+    buffer.filter(BLUR, blurAmount);
+  }
+
+  buffer.loadPixels();
+  let fillColor;
+  if (layer === 'coloredTiles') {
+    fillColor = color(getTilePalette()[0]);
+  } else if (layer === 'dots') {
+    fillColor = color(getDotsColor());
+  } else if (layer === 'delaunayCircles') {
+    fillColor = color(getDelaunayCircleColor());
+  } else if (layer === 'delaunay') {
+    fillColor = color(getDelaunayEdgeColor());
+  } else if (layer === 'voronoiEdges') {
+    fillColor = color(getVoronoiEdgeColor());
+  } else if (layer === 'voronoiFilled') {
+    fillColor = color(getVoronoiFillColor());
+  }
+  let r = fillColor.levels[0];
+  let g = fillColor.levels[1];
+  let b = fillColor.levels[2];
+
+  for (let i = 0; i < buffer.pixels.length; i += 4) {
+    let alpha = buffer.pixels[i + 3];
+    if (alpha > thresholdAmount) {
+      buffer.pixels[i] = r;
+      buffer.pixels[i + 1] = g;
+      buffer.pixels[i + 2] = b;
+      buffer.pixels[i + 3] = 255;
+    } else {
+      buffer.pixels[i] = r;
+      buffer.pixels[i + 1] = g;
+      buffer.pixels[i + 2] = b;
+      buffer.pixels[i + 3] = 0;
+    }
+  }
+  buffer.updatePixels();
+}
+
 function isMouseInCanvas() {
   return mouseX >= 0 && mouseX <= width && mouseY >= 0 && mouseY <= height;
 }
@@ -122,39 +174,45 @@ function draw() {
 
   if (layers.coloredTiles) {
     drawColoredTiles(voronoi, buffers.coloredTiles);
+    // applyBlurAndThreshold(buffers.coloredTiles, 'coloredTiles');
     tint(255, getEdgeTransparency());
     texture(buffers.coloredTiles);
     plane(width, height);
   }
   if (layers.dots) {
     drawDots(buffers.dots);
+    applyBlurAndThreshold(buffers.dots, 'dots');
     tint(255, getDotsTransparency());
     texture(buffers.dots);
     plane(width, height);
   }
   if (layers.delaunayCircles) {
     drawDelaunayCircles(delaunay, buffers.delaunayCircles);
+    applyBlurAndThreshold(buffers.delaunayCircles, 'delaunayCircles');
     tint(255, getDelaunayCircleTransparency());
     texture(buffers.delaunayCircles);
     plane(width, height);
   }
   if (layers.delaunay) {
     drawDelaunay(delaunay, buffers.delaunay);
+    applyBlurAndThreshold(buffers.delaunay, 'delaunay');
     tint(255, getDelaunayEdgeTransparency());
     texture(buffers.delaunay);
     plane(width, height);
   }
+  drawVoronoiEdges(voronoi, buffers.voronoiEdges);
+  applyBlurAndThreshold(buffers.voronoiEdges, 'voronoiEdges');
   if (layers.voronoiEdges) {
-    drawVoronoiEdges(voronoi, buffers.voronoiEdges);
     tint(255, getEdgeTransparency());
     texture(buffers.voronoiEdges);
     plane(width, height);
   }
   if (layers.voronoiFilled) {
     drawVoronoiFilled(voronoi, buffers.voronoiFilled);
-    buffers.voronoiFilled.texture(buffers.voronoiEdges)
     buffers.voronoiFilled.noStroke();
-    buffers.voronoiFilled.plane(buffers.voronoiFilled.width, buffers.voronoiFilled.height);
+    buffers.voronoiFilled.texture(buffers.voronoiEdges);
+    buffers.voronoiFilled.plane(width, height);
+    applyBlurAndThreshold(buffers.voronoiFilled, 'voronoiFilled');
     tint(255, getVoronoiFillTransparency());
     texture(buffers.voronoiFilled);
     plane(width, height);

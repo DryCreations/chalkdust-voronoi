@@ -65,4 +65,7 @@ body {
   select {
     margin-left: 5px;
   }
-  
+
+  .toggle-container input[type="number"] {
+    width: 50px;
+  }
