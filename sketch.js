@@ -11,7 +11,7 @@ let layers = {
 };
 let currentEditingLayer = 'coloredTiles';
 let exportScale = 1;
-let width = 800, height = 1200;
+let width = 1000, height = 1200;
 let selectedDotIndex = null;
 let offsetX = 0;
 let offsetY = 0;

@@ -1,71 +1,104 @@
 /* Basic Layout */
 body {
-    font-family: Arial, sans-serif;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    padding: 20px;
-    margin: 0;
-  }
-  
-  .container {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-  }
-  
-  .controls {
-    width: 250px;
-    padding: 10px;
-  }
-  
-  h1 {
-    font-size: 24px;
-  }
-  
-  h3 {
-    font-size: 18px;
-  }
-  
-  button {
-    margin: 10px 0;
-    padding: 10px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    cursor: pointer;
-  }
-  
-  button:hover {
-    background-color: #45a049;
-  }
-  
-  #canvas-container {
-    flex-grow: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: 1px solid #ccc;
-    background-color: #f0f0f0;
-    position: relative;
-  }
-  
-  .toggle-container {
-    margin-bottom: 10px;
-  }
-  
-  label {
-    margin-right: 10px;
-  }
-  
-  input[type="checkbox"] {
-    margin-left: 5px;
-  }
-  
-  select {
-    margin-left: 5px;
-  }
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 20px;
+  margin: 0;
+}
 
-  .toggle-container input[type="number"] {
-    width: 50px;
-  }
+.container {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.controls {
+  width: 300px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+h3 {
+  font-size: 18px;
+  margin-top: 20px;
+}
+
+h4 {
+  font-size: 16px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+button {
+  margin: 10px 0;
+  padding: 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  border-radius: 5px;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+main {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #ccc;
+  background-color: #f0f0f0;
+  position: fixed; /* Change from relative to fixed */
+  right: 10px;
+
+}
+
+.toggle-container {
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  margin-bottom: 5px;
+}
+
+input[type="checkbox"] {
+  margin-left: 5px;
+}
+
+select, input[type="number"], input[type="text"] {
+  margin-top: 5px;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  width: 100%;
+}
+
+.layer-section {
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.layer-section h4 {
+  margin-top: 0;
+}
+
+.toggle-container input[type="number"] {
+  width: 100%;
+}

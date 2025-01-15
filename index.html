@@ -17,59 +17,103 @@
 
       <!-- Layer Toggles -->
       <h3>Layer Controls</h3>
-      <div class="toggle-container">
-        <label for="layerColoredTiles">Colored Tiles:</label>
-        <input type="checkbox" id="layerColoredTiles" checked>
-        <label for="coloredTilesBlurInput">Blur:</label>
-        <input type="number" id="coloredTilesBlurInput" value="0" min="0">
-        <label for="coloredTilesThresholdInput">Threshold:</label>
-        <input type="number" id="coloredTilesThresholdInput" value="128" min="0" max="255">
+      <div class="layer-section">
+        <h4>Colored Tiles</h4>
+        <div class="toggle-container">
+          <label for="layerColoredTiles">Enable:</label>
+          <input type="checkbox" id="layerColoredTiles" checked>
+          <label for="coloredTilesBlurInput">Blur:</label>
+          <input type="number" id="coloredTilesBlurInput" value="0" min="0">
+          <label for="coloredTilesThresholdInput">Threshold:</label>
+          <input type="number" id="coloredTilesThresholdInput" value="128" min="0" max="255">
+          <label for="tileColorsInput">Tile Colors (Comma Separated):</label>
+          <input type="text" id="tileColorsInput" value="#FD5901, #F78104, #FAAB36, #249EA0, #008083, #005F60">
+        </div>
       </div>
-      <div class="toggle-container">
-        <label for="layerDots">Dots:</label>
-        <input type="checkbox" id="layerDots" checked>
-        <label for="dotsColorInput">Color:</label>
-        <input type="text" id="dotsColorInput" value="#FD5901">
-        <label for="dotsTransparencyInput">Transparency:</label>
-        <input type="number" id="dotsTransparencyInput" value="255" min="0" max="255">
-        <label for="dotsWeightInput">Weight:</label>
-        <input type="number" id="dotsWeightInput" value="1" min="1">
-        <label for="dotsBlurInput">Blur:</label>
-        <input type="number" id="dotsBlurInput" value="0" min="0">
-        <label for="dotsThresholdInput">Threshold:</label>
-        <input type="number" id="dotsThresholdInput" value="128" min="0" max="255">
+      <div class="layer-section">
+        <h4>Dots</h4>
+        <div class="toggle-container">
+          <label for="layerDots">Enable:</label>
+          <input type="checkbox" id="layerDots" checked>
+          <label for="dotsColorInput">Color:</label>
+          <input type="text" id="dotsColorInput" value="#FD5901">
+          <label for="dotsTransparencyInput">Transparency:</label>
+          <input type="number" id="dotsTransparencyInput" value="255" min="0" max="255">
+          <label for="dotsWeightInput">Weight:</label>
+          <input type="number" id="dotsWeightInput" value="1" min="1">
+          <label for="dotsBlurInput">Blur:</label>
+          <input type="number" id="dotsBlurInput" value="0" min="0">
+          <label for="dotsThresholdInput">Threshold:</label>
+          <input type="number" id="dotsThresholdInput" value="128" min="0" max="255">
+        </div>
       </div>
-      <div class="toggle-container">
-        <label for="layerDelaunayCircles">Delaunay Circles:</label>
-        <input type="checkbox" id="layerDelaunayCircles" checked>
-        <label for="delaunayCirclesBlurInput">Blur:</label>
-        <input type="number" id="delaunayCirclesBlurInput" value="0" min="0">
-        <label for="delaunayCirclesThresholdInput">Threshold:</label>
-        <input type="number" id="delaunayCirclesThresholdInput" value="128" min="0" max="255">
+      <div class="layer-section">
+        <h4>Delaunay Circles</h4>
+        <div class="toggle-container">
+          <label for="layerDelaunayCircles">Enable:</label>
+          <input type="checkbox" id="layerDelaunayCircles" checked>
+          <label for="delaunayCirclesBlurInput">Blur:</label>
+          <input type="number" id="delaunayCirclesBlurInput" value="0" min="0">
+          <label for="delaunayCirclesThresholdInput">Threshold:</label>
+          <input type="number" id="delaunayCirclesThresholdInput" value="128" min="0" max="255">
+          <label for="delaunayCircleColorInput">Circle Color:</label>
+          <input type="text" id="delaunayCircleColorInput" value="#0000FF">
+          <label for="delaunayCircleTransparencyInput">Transparency:</label>
+          <input type="number" id="delaunayCircleTransparencyInput" value="255" min="0" max="255">
+          <label for="delaunayCircleWeightInput">Weight:</label>
+          <input type="number" id="delaunayCircleWeightInput" value="1" min="1">
+        </div>
       </div>
-      <div class="toggle-container">
-        <label for="layerDelaunay">Delaunay Triangulation:</label>
-        <input type="checkbox" id="layerDelaunay" checked>
-        <label for="delaunayBlurInput">Blur:</label>
-        <input type="number" id="delaunayBlurInput" value="0" min="0">
-        <label for="delaunayThresholdInput">Threshold:</label>
-        <input type="number" id="delaunayThresholdInput" value="128" min="0" max="255">
+      <div class="layer-section">
+        <h4>Delaunay Triangulation</h4>
+        <div class="toggle-container">
+          <label for="layerDelaunay">Enable:</label>
+          <input type="checkbox" id="layerDelaunay" checked>
+          <label for="delaunayBlurInput">Blur:</label>
+          <input type="number" id="delaunayBlurInput" value="0" min="0">
+          <label for="delaunayThresholdInput">Threshold:</label>
+          <input type="number" id="delaunayThresholdInput" value="128" min="0" max="255">
+          <label for="delaunayEdgeColorInput">Edge Color:</label>
+          <input type="text" id="delaunayEdgeColorInput" value="#FF0000">
+          <label for="delaunayEdgeTransparencyInput">Transparency:</label>
+          <input type="number" id="delaunayEdgeTransparencyInput" value="255" min="0" max="255">
+          <label for="delaunayEdgeWeightInput">Weight:</label>
+          <input type="number" id="delaunayEdgeWeightInput" value="1" min="1">
+        </div>
       </div>
-      <div class="toggle-container">
-        <label for="layerVoronoi">Voronoi Edges:</label>
-        <input type="checkbox" id="layerVoronoi" checked>
-        <label for="voronoiEdgesBlurInput">Blur:</label>
-        <input type="number" id="voronoiEdgesBlurInput" value="0" min="0">
-        <label for="voronoiEdgesThresholdInput">Threshold:</label>
-        <input type="number" id="voronoiEdgesThresholdInput" value="128" min="0" max="255">
+      <div class="layer-section">
+        <h4>Voronoi Edges</h4>
+        <div class="toggle-container">
+          <label for="layerVoronoi">Enable:</label>
+          <input type="checkbox" id="layerVoronoi" checked>
+          <label for="voronoiEdgesBlurInput">Blur:</label>
+          <input type="number" id="voronoiEdgesBlurInput" value="0" min="0">
+          <label for="voronoiEdgesThresholdInput">Threshold:</label>
+          <input type="number" id="voronoiEdgesThresholdInput" value="128" min="0" max="255">
+          <label for="edgeColorInput">Edge Color:</label>
+          <input type="text" id="edgeColorInput" value="#000000">
+          <label for="edgeTransparencyInput">Transparency:</label>
+          <input type="number" id="edgeTransparencyInput" value="255" min="0" max="255">
+          <label for="edgeWeightInput">Weight:</label>
+          <input type="number" id="edgeWeightInput" value="1" min="1">
+        </div>
       </div>
-      <div class="toggle-container">
-        <label for="layerVoronoiFilled">Voronoi Filled:</label>
-        <input type="checkbox" id="layerVoronoiFilled" checked>
-        <label for="voronoiFilledBlurInput">Blur:</label>
-        <input type="number" id="voronoiFilledBlurInput" value="0" min="0">
-        <label for="voronoiFilledThresholdInput">Threshold:</label>
-        <input type="number" id="voronoiFilledThresholdInput" value="128" min="0" max="255">
+      <div class="layer-section">
+        <h4>Voronoi Filled</h4>
+        <div class="toggle-container">
+          <label for="layerVoronoiFilled">Enable:</label>
+          <input type="checkbox" id="layerVoronoiFilled" checked>
+          <label for="voronoiFilledBlurInput">Blur:</label>
+          <input type="number" id="voronoiFilledBlurInput" value="0" min="0">
+          <label for="voronoiFilledThresholdInput">Threshold:</label>
+          <input type="number" id="voronoiFilledThresholdInput" value="128" min="0" max="255">
+          <label for="voronoiFillColorInput">Fill Color:</label>
+          <input type="text" id="voronoiFillColorInput" value="#000000">
+          <label for="voronoiFillTransparencyInput">Transparency:</label>
+          <input type="number" id="voronoiFillTransparencyInput" value="255" min="0" max="255">
+          <label for="voronoiFillWeightInput">Weight:</label>
+          <input type="number" id="voronoiFillWeightInput" value="1" min="1">
+        </div>
       </div>
 
       <!-- Layer Editing Selection -->
@@ -104,45 +148,12 @@
         <button id="generateNewPointsButton">Generate New Points</button>
         <button id="exportImageButton">Export Image</button>
       </div>
+
+      <!-- Additional Settings -->
+      <h3>Additional Settings</h3>
       <div class="toggle-container">
         <label for="numPointsInput">Number of Points:</label>
         <input type="number" id="numPointsInput" value="10">
-      </div>
-      <div class="toggle-container">
-        <label for="tileColorsInput">Tile Colors (Comma Separated):</label>
-        <input type="text" id="tileColorsInput" value="#FD5901, #F78104, #FAAB36, #249EA0, #008083, #005F60">
-      </div>
-      <div class="toggle-container">
-        <label for="edgeColorInput">Voronoi Edge Color:</label>
-        <input type="text" id="edgeColorInput" value="#000000">
-        <label for="edgeTransparencyInput">Transparency:</label>
-        <input type="number" id="edgeTransparencyInput" value="255" min="0" max="255">
-        <label for="edgeWeightInput">Weight:</label>
-        <input type="number" id="edgeWeightInput" value="1" min="1">
-      </div>
-      <div class="toggle-container">
-        <label for="delaunayEdgeColorInput">Delaunay Edge Color:</label>
-        <input type="text" id="delaunayEdgeColorInput" value="#FF0000">
-        <label for="delaunayEdgeTransparencyInput">Transparency:</label>
-        <input type="number" id="delaunayEdgeTransparencyInput" value="255" min="0" max="255">
-        <label for="delaunayEdgeWeightInput">Weight:</label>
-        <input type="number" id="delaunayEdgeWeightInput" value="1" min="1">
-      </div>
-      <div class="toggle-container">
-        <label for="delaunayCircleColorInput">Delaunay Circle Color:</label>
-        <input type="text" id="delaunayCircleColorInput" value="#0000FF">
-        <label for="delaunayCircleTransparencyInput">Transparency:</label>
-        <input type="number" id="delaunayCircleTransparencyInput" value="255" min="0" max="255">
-        <label for="delaunayCircleWeightInput">Weight:</label>
-        <input type="number" id="delaunayCircleWeightInput" value="1" min="1">
-      </div>
-      <div class="toggle-container">
-        <label for="voronoiFillColorInput">Voronoi Fill Color:</label>
-        <input type="text" id="voronoiFillColorInput" value="#000000">
-        <label for="voronoiFillTransparencyInput">Transparency:</label>
-        <input type="number" id="voronoiFillTransparencyInput" value="255" min="0" max="255">
-        <label for="voronoiFillWeightInput">Weight:</label>
-        <input type="number" id="voronoiFillWeightInput" value="1" min="1">
       </div>
     </div>
 
