@@ -391,6 +391,12 @@ function requestRedraw(layer) {
   redraw();
 }
 
+function requestAllLayersRedraw() {
+  ['coloredTiles','dots','delaunayCircles','delaunay','voronoiEdges','voronoiFilled'].forEach(layer => {
+    requestRedraw(layer);
+  });
+}
+
 function updateAllLayers() {
   let delaunay = d3.Delaunay.from(points);
   let voronoi = delaunay.voronoi([0, 0, width, height]);
@@ -781,12 +787,7 @@ function mousePressed() {
       points.push([mouseX, mouseY]);
       colors.push([random(255), random(255), random(255), 100]);
       colorIndexes.push(floor(random(getTilePalette().length))); // Add corresponding color index
-      requestRedraw('coloredTiles');
-      requestRedraw('dots');
-      requestRedraw('delaunayCircles');
-      requestRedraw('delaunay');
-      requestRedraw('voronoiEdges');
-      requestRedraw('voronoiFilled');
+      requestAllLayersRedraw();
     }
   }
   if (currentEditingLayer === 'coloredTiles') {
@@ -817,7 +818,7 @@ function mouseDragged() {
 
   if (currentEditingLayer === 'dots' && selectedDotIndex !== null) {
     points[selectedDotIndex] = [mouseX + offsetX, mouseY + offsetY];
-    requestRedraw('dots');
+    requestAllLayersRedraw();
   }
 }
 
