@@ -23,7 +23,7 @@ let layers = {
 };
 let currentEditingLayer = 'coloredTiles';
 let exportScale = 1;
-let width = 800, height = 800;
+let width = 1100, height = 425;
 let selectedDotIndex = null;
 let offsetX = 0;
 let offsetY = 0;
@@ -792,7 +792,8 @@ function handleLayerEditing() {
 }
 
 function exportImage() {
-  let scale = exportScale; // Already defined from user input
+  let scale = exportScale;
+  let scaleRatio = scale; // Calculate scaling ratio based on exportScale
 
   // Define layer ordering for naming
   let layerOrder = [
@@ -814,39 +815,355 @@ function exportImage() {
     // 2. Save main canvas last
     saveCanvas(nf(layerOrder.length, 2) + '_mainCanvas');
   } else {
-    // 1. Create larger buffers and main canvas
     let bigWidth = width * scale;
     let bigHeight = height * scale;
     let tempCanvas = createGraphics(bigWidth, bigHeight);
+    tempCanvas.pixelDensity(1);
+    tempCanvas.background(255, 255, 255, 0);
+    
+    // Create scaled buffers for each layer
+    let scaledBuffers = {};
+    ['coloredTiles','dots','delaunayCircles','delaunay','voronoiEdges','voronoiFilled'].forEach(layerName => {
+      scaledBuffers[layerName] = createGraphics(bigWidth, bigHeight);
+      scaledBuffers[`${layerName}Shadow`] = createGraphics(bigWidth, bigHeight);
+      scaledBuffers[`${layerName}Screen`] = createGraphics(bigWidth, bigHeight);
+      scaledBuffers[layerName].pixelDensity(1);
+      scaledBuffers[`${layerName}Shadow`].pixelDensity(1);
+      scaledBuffers[`${layerName}Screen`].pixelDensity(1);
+    });
 
-    // 2. Redraw each layer into a bigger buffer
-    layerOrder.forEach((layer, i) => {
-      if (layers[layer.name]) {
-        let bigBuffer = createGraphics(bigWidth, bigHeight);
-        bigBuffer.push();
-        bigBuffer.scale(scale);
-        // Draw the existing buffer content
-        bigBuffer.image(buffers[layer.name], 0, 0);
-        bigBuffer.pop();
-        saveCanvasLayer(bigBuffer, nf(i, 2) + '_' + layer.label + '_' + scale + 'x');
+    // Redraw each layer geometry into scaled buffers
+    let delaunay = d3.Delaunay.from(points);
+    let voronoi = delaunay.voronoi([0, 0, bigWidth, bigHeight]);
+
+    // Scale utility for points
+    let scaledPoints = points.map(([px, py]) => [px * scale, py * scale]);
+
+    // Draw each layer in scaled buffers with scaled weights and blurs
+    if (layers.coloredTiles) {
+      drawColoredTilesScaled(voronoi, scaledBuffers.coloredTiles, scaledPoints, scaleRatio);
+      // applyBlurAndThresholdScaled(scaledBuffers.coloredTiles, 'coloredTiles', scaleRatio);
+    }
+    if (layers.dots) {
+      drawDotsScaled(scaledBuffers.dots, scaledPoints, scaleRatio);
+      applyBlurAndThresholdScaled(scaledBuffers.dots, 'dots', scaleRatio);
+    }
+    if (layers.delaunayCircles) {
+      drawDelaunayCirclesScaled(delaunay, scaledBuffers.delaunayCircles, scaledPoints, scaleRatio);
+      applyBlurAndThresholdScaled(scaledBuffers.delaunayCircles, 'delaunayCircles', scaleRatio);
+    }
+    if (layers.delaunay) {
+      drawDelaunayScaled(delaunay, scaledBuffers.delaunay, scaledPoints, scaleRatio);
+      applyBlurAndThresholdScaled(scaledBuffers.delaunay, 'delaunay', scaleRatio);
+    }
+    if (layers.voronoiEdges || layers.voronoiFilled) {
+      drawVoronoiEdgesScaled(voronoi, scaledBuffers.voronoiEdges, scaleRatio);
+      applyBlurAndThresholdScaled(scaledBuffers.voronoiEdges, 'voronoiEdges', scaleRatio);
+    }
+    if (layers.voronoiFilled) {
+      drawVoronoiFilledScaled(voronoi, scaledBuffers.voronoiFilled, scaledPoints, scaleRatio);
+      scaledBuffers.voronoiFilled.noStroke();
+      scaledBuffers.voronoiFilled.image(scaledBuffers.voronoiEdges, 0, 0);
+      applyBlurAndThresholdScaled(scaledBuffers.voronoiFilled, 'voronoiFilled', scaleRatio);
+    }
+
+    // Draw shadow & screen for each scaled layer
+    ['coloredTiles','dots','delaunayCircles','delaunay','voronoiEdges','voronoiFilled'].forEach(layer => {
+      if (layers[`${layer}Shadow`]) {
+        applyShadowToScaledBuffer(scaledBuffers[layer], scaledBuffers[`${layer}Shadow`], layer);
+      }
+      if (layers[`${layer}Screen`]) {
+        applyScreenToScaledBuffer(scaledBuffers[`${layer}Screen`], layer, bigWidth, bigHeight);
       }
     });
 
-    // 3. Redraw main canvas at higher resolution
+    // Composite in correct order into tempCanvas
     tempCanvas.push();
-    tempCanvas.scale(scale);
-    tempCanvas.image(get(0,0,width,height), 0, 0);
+    tempCanvas.noTint();
+
+    // Colored Tiles
+    if (layers.coloredTilesShadow) {
+      tempCanvas.tint(255, getShadowOpacity('coloredTiles'));
+      tempCanvas.image(scaledBuffers.coloredTilesShadow, 0, 0);
+      tempCanvas.noTint();
+    }
+    if (layers.coloredTiles) {
+      tempCanvas.tint(255, getLayerOpacity('coloredTiles'));
+      tempCanvas.image(scaledBuffers.coloredTiles, 0, 0);
+      tempCanvas.noTint();
+    }
+    if (layers.coloredTilesScreen) {
+      tempCanvas.tint(255, getScreenOpacity('coloredTiles'));
+      tempCanvas.image(scaledBuffers.coloredTilesScreen, 0, 0);
+      tempCanvas.noTint();
+    }
+
+    // Dots
+    if (layers.dotsShadow) {
+      tempCanvas.tint(255, getShadowOpacity('dots'));
+      tempCanvas.image(scaledBuffers.dotsShadow, 0, 0);
+      tempCanvas.noTint();
+    }
+    if (layers.dots) {
+      tempCanvas.tint(255, getLayerOpacity('dots'));
+      tempCanvas.image(scaledBuffers.dots, 0, 0);
+      tempCanvas.noTint();
+    }
+    if (layers.dotsScreen) {
+      tempCanvas.tint(255, getScreenOpacity('dots'));
+      tempCanvas.image(scaledBuffers.dotsScreen, 0, 0);
+      tempCanvas.noTint();
+    }
+
+    // Delaunay Circles
+    if (layers.delaunayCirclesShadow) {
+      tempCanvas.tint(255, getShadowOpacity('delaunayCircles'));
+      tempCanvas.image(scaledBuffers.delaunayCirclesShadow, 0, 0);
+      tempCanvas.noTint();
+    }
+    if (layers.delaunayCircles) {
+      tempCanvas.tint(255, getLayerOpacity('delaunayCircles'));
+      tempCanvas.image(scaledBuffers.delaunayCircles, 0, 0);
+      tempCanvas.noTint();
+    }
+    if (layers.delaunayCirclesScreen) {
+      tempCanvas.tint(255, getScreenOpacity('delaunayCircles'));
+      tempCanvas.image(scaledBuffers.delaunayCirclesScreen, 0, 0);
+      tempCanvas.noTint();
+    }
+
+    // Delaunay Triangulation
+    if (layers.delaunayShadow) {
+      tempCanvas.tint(255, getShadowOpacity('delaunay'));
+      tempCanvas.image(scaledBuffers.delaunayShadow, 0, 0);
+      tempCanvas.noTint();
+    }
+    if (layers.delaunay) {
+      tempCanvas.tint(255, getLayerOpacity('delaunay'));
+      tempCanvas.image(scaledBuffers.delaunay, 0, 0);
+      tempCanvas.noTint();
+    }
+    if (layers.delaunayScreen) {
+      tempCanvas.tint(255, getScreenOpacity('delaunay'));
+      tempCanvas.image(scaledBuffers.delaunayScreen, 0, 0);
+      tempCanvas.noTint();
+    }
+
+    // Voronoi Edges
+    if (layers.voronoiEdgesShadow) {
+      tempCanvas.tint(255, getShadowOpacity('voronoiEdges'));
+      tempCanvas.image(scaledBuffers.voronoiEdgesShadow, 0, 0);
+      tempCanvas.noTint();
+    }
+    if (layers.voronoiEdges) {
+      tempCanvas.tint(255, getLayerOpacity('voronoiEdges'));
+      tempCanvas.image(scaledBuffers.voronoiEdges, 0, 0);
+      tempCanvas.noTint();
+    }
+    if (layers.voronoiEdgesScreen) {
+      tempCanvas.tint(255, getScreenOpacity('voronoiEdges'));
+      tempCanvas.image(scaledBuffers.voronoiEdgesScreen, 0, 0);
+      tempCanvas.noTint();
+    }
+
+    // Voronoi Filled
+    if (layers.voronoiFilledShadow) {
+      tempCanvas.tint(255, getShadowOpacity('voronoiFilled'));
+      tempCanvas.image(scaledBuffers.voronoiFilledShadow, 0, 0);
+      tempCanvas.noTint();
+    }
+    if (layers.voronoiFilled) {
+      tempCanvas.tint(255, getLayerOpacity('voronoiFilled'));
+      tempCanvas.image(scaledBuffers.voronoiFilled, 0, 0);
+      tempCanvas.noTint();
+    }
+    if (layers.voronoiFilledScreen) {
+      tempCanvas.tint(255, getScreenOpacity('voronoiFilled'));
+      tempCanvas.image(scaledBuffers.voronoiFilledScreen, 0, 0);
+      tempCanvas.noTint();
+    }
+
     tempCanvas.pop();
-    saveCanvasLayer(tempCanvas, nf(layerOrder.length, 2) + '_mainCanvas_' + scale + 'x');
+
+    // Save the composited image
+    tempCanvas.save('exported_scaled_' + scale + 'x.png');
   }
 }
 
-// Helper function for naming and saving
-function saveCanvasLayer(g, filename) {
-  // Make an HTML canvas copy from the p5.Graphics object
-  let c = createImage(g.width, g.height);
-  c.copy(g, 0, 0, g.width, g.height, 0, 0, g.width, g.height);
-  c.save(filename + '.png');
+// Helper functions for scaled drawing
+function drawColoredTilesScaled(voronoi, buffer, scaledPoints, scaleRatio) {
+  buffer.clear();
+  buffer.push();
+  let palette = getTilePalette();
+  for (let i = 0; i < scaledPoints.length; i++) {
+    let polygon = voronoi.cellPolygon(i);
+    if (!polygon) continue; // Ensure polygon exists
+    buffer.fill(palette[colorIndexes[i]] || '#FAAB36');
+    buffer.noStroke();
+    buffer.beginShape();
+    polygon.forEach(([x, y]) => buffer.vertex(x * scaleRatio, y * scaleRatio)); // Scale coordinates
+    buffer.endShape(CLOSE);
+  }
+  buffer.pop();
+}
+
+function drawDotsScaled(buffer, scaledPoints, scaleRatio) {
+  buffer.clear();
+  buffer.push();
+  let dotColor = color(getDotsColor());
+  let weight = getDotsWeight() * scaleRatio; // Scale line weight
+  buffer.fill(dotColor.levels[0], dotColor.levels[1], dotColor.levels[2], 255);
+  buffer.noStroke();
+  for (let [sx, sy] of scaledPoints) {
+    buffer.ellipse(sx, sy, weight, weight);
+  }
+  buffer.pop();
+}
+
+function drawDelaunayScaled(delaunay, buffer, scaledPoints, scaleRatio) {
+  buffer.clear();
+  buffer.push();
+  let edgeColor = color(getDelaunayEdgeColor());
+  let weight = getDelaunayEdgeWeight() * scaleRatio; // Scale line weight
+  buffer.stroke(edgeColor.levels[0], edgeColor.levels[1], edgeColor.levels[2], 255);
+  buffer.strokeWeight(weight);
+  buffer.noFill();
+  for (let i = 0; i < delaunay.triangles.length; i += 3) {
+    let t0 = delaunay.triangles[i];
+    let t1 = delaunay.triangles[i + 1];
+    let t2 = delaunay.triangles[i + 2];
+    buffer.line(scaledPoints[t0][0], scaledPoints[t0][1], scaledPoints[t1][0], scaledPoints[t1][1]);
+    buffer.line(scaledPoints[t1][0], scaledPoints[t1][1], scaledPoints[t2][0], scaledPoints[t2][1]);
+    buffer.line(scaledPoints[t2][0], scaledPoints[t2][1], scaledPoints[t0][0], scaledPoints[t0][1]);
+  }
+  buffer.pop();
+}
+
+function drawDelaunayCirclesScaled(delaunay, buffer, scaledPoints, scaleRatio) {
+  buffer.clear();
+  buffer.push();
+  let circleColor = color(getDelaunayCircleColor());
+  let weight = getDelaunayCircleWeight() * scaleRatio; // Scale line weight
+  buffer.stroke(circleColor.levels[0], circleColor.levels[1], circleColor.levels[2], 255);
+  buffer.strokeWeight(weight);
+  buffer.noFill();
+  for (let i = 0; i < delaunay.triangles.length; i += 3) {
+    let t0 = delaunay.triangles[i];
+    let t1 = delaunay.triangles[i + 1];
+    let t2 = delaunay.triangles[i + 2];
+    let [x0, y0] = scaledPoints[t0];
+    let [x1, y1] = scaledPoints[t1];
+    let [x2, y2] = scaledPoints[t2];
+
+    // Calculate the circumcenter
+    let D = 2 * (x0 * (y1 - y2) + x1 * (y2 - y0) + x2 * (y0 - y1));
+    let Ux = ((x0 * x0 + y0 * y0) * (y1 - y2) + (x1 * x1 + y1 * y1) * (y2 - y0) + (x2 * x2 + y2 * y2) * (y0 - y1)) / D;
+    let Uy = ((x0 * x0 + y0 * y0) * (x2 - x1) + (x1 * x1 + y1 * y1) * (x0 - x2) + (x2 * x2 + y2 * y2) * (x1 - x0)) / D;
+
+    // Calculate the circumradius
+    let r = dist(Ux, Uy, x0, y0); // Scale radius
+
+    buffer.ellipse(Ux, Uy, r * 2, r * 2);
+  }
+  buffer.pop();
+}
+
+function drawVoronoiEdgesScaled(voronoi, buffer, scaleRatio) {
+  buffer.clear();
+  buffer.push();
+  let edgeColor = color(getVoronoiEdgeColor());
+  let weight = getEdgeWeight() * scaleRatio; // Scale line weight
+  buffer.stroke(edgeColor.levels[0], edgeColor.levels[1], edgeColor.levels[2], 255);
+  buffer.strokeWeight(weight);
+  buffer.noFill();
+  for (let i = 0; i < points.length; i++) {
+    let polygon = voronoi.cellPolygon(i);
+    if (!polygon) continue;
+    buffer.beginShape();
+    polygon.forEach(([x, y]) => buffer.vertex(x * scaleRatio, y * scaleRatio)); // Scale coordinates
+    buffer.endShape(CLOSE);
+  }
+  buffer.pop();
+}
+
+function drawVoronoiFilledScaled(voronoi, buffer, scaledPoints, scaleRatio) {
+  buffer.clear();
+  buffer.push();
+  let fillColor = color(getVoronoiFillColor());
+  for (let i = 0; i < scaledPoints.length; i++) {
+    if (filledCells.includes(i)) {
+      let polygon = voronoi.cellPolygon(i);
+      if (!polygon) continue; // Ensure polygon exists
+      buffer.fill(fillColor.levels[0], fillColor.levels[1], fillColor.levels[2], 255);
+      buffer.noStroke();
+      buffer.beginShape();
+      polygon.forEach(([x, y]) => buffer.vertex(x * scaleRatio, y * scaleRatio)); // Scale coordinates
+      buffer.endShape(CLOSE);
+    }
+  }
+  buffer.pop();
+}
+
+function applyBlurAndThresholdScaled(buffer, layer, scaleRatio) {
+  let blurAmount = getBlurAmount(layer) * scaleRatio; // Scale blur amount
+  let thresholdAmount = getThresholdAmount(layer);
+  if (blurAmount > 0) {
+    buffer.filter(BLUR, blurAmount);
+  }
+  buffer.loadPixels();
+  for (let i = 0; i < buffer.pixels.length; i += 4) {
+    let alpha = buffer.pixels[i + 3];
+    if (alpha > thresholdAmount) {
+      if (layer === 'coloredTiles') {
+        // Do not change RGB, only ensure alpha is fully opaque
+        buffer.pixels[i + 3] = 255;
+      } else {
+        let fillColor = color(
+          layer === 'dots' ? getDotsColor() :
+          layer === 'delaunayCircles' ? getDelaunayCircleColor() :
+          layer === 'delaunay' ? getDelaunayEdgeColor() :
+          layer === 'voronoiEdges' ? getVoronoiEdgeColor() :
+          layer === 'voronoiFilled' ? getVoronoiFillColor() :
+          '#FFFFFF' // Fallback color
+        );
+        buffer.pixels[i] = red(fillColor);
+        buffer.pixels[i + 1] = green(fillColor);
+        buffer.pixels[i + 2] = blue(fillColor);
+        buffer.pixels[i + 3] = 255;
+      }
+    } else {
+      buffer.pixels[i + 3] = 0;
+    }
+  }
+  buffer.updatePixels();
+}
+
+function applyShadowToScaledBuffer(srcBuffer, shadowBuffer, layer) {
+  shadowBuffer.clear();
+  shadowBuffer.image(srcBuffer, 0, 0);
+  let blurAmount = getShadowBlur(layer);
+  if (blurAmount > 0) {
+    shadowBuffer.filter(BLUR, blurAmount);
+  }
+  shadowBuffer.loadPixels();
+  let shadowClr = color(layers[`${layer}ShadowColor`] || '#000000');
+  for (let i = 0; i < shadowBuffer.pixels.length; i += 4) {
+    shadowBuffer.pixels[i] = red(shadowClr);
+    shadowBuffer.pixels[i + 1] = green(shadowClr);
+    shadowBuffer.pixels[i + 2] = blue(shadowClr);
+  }
+  shadowBuffer.updatePixels();
+}
+
+function applyScreenToScaledBuffer(screenBuffer, layer, bigWidth, bigHeight) {
+  screenBuffer.clear();
+  screenBuffer.noStroke();
+  let sc = getScreenColor(layer);
+  let so = getScreenOpacity(layer);
+  let overlayColor = color(sc);
+  overlayColor.setAlpha(so);
+  screenBuffer.fill(overlayColor);
+  screenBuffer.rect(0, 0, bigWidth, bigHeight);
 }
 
 function mousePressed() {
@@ -931,4 +1248,11 @@ function getShadowBlur(layer) {
 function getShadowThreshold(layer) {
   // Similarly, expose a shadow threshold input in your HTML or default to 0.
   return 0;
+}
+// Helper function for naming and saving
+function saveCanvasLayer(g, filename) {
+  // Make an HTML canvas copy from the p5.Graphics object
+  let c = createImage(g.width, g.height);
+  c.copy(g, 0, 0, g.width, g.height, 0, 0, g.width, g.height);
+  c.save(filename + '.png');
 }

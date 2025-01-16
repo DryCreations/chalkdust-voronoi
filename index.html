@@ -136,7 +136,7 @@
       <div class="toggle-container">
         <label for="exportSize">Export Size:</label>
         <select id="exportSize">
-          <option value="1">1x</option>
+          <option value="1">1x (Current Size)</option>
           <option value="2">2x</option>
           <option value="3">3x</option>
           <option value="4">4x</option>
@@ -144,9 +144,9 @@
           <option value="6">6x</option>
           <option value="7">7x</option>
           <option value="8">8x</option>
-          <option value="custom">Custom</option>
+          <option value="9">9x</option>
+          <option value="10">10x</option>
         </select>
-        <input type="number" id="customScaleInput" placeholder="Enter scale" min="1" step="0.1" style="display:none; margin-left: 10px;">
       </div>
 
       <!-- Buttons for Actions -->
@@ -304,17 +304,6 @@
 
     <!-- Move script here -->
     <script src="sketch.js"></script>
-    <script>
-      // Show or hide the custom scale input based on selection
-      document.getElementById('exportSize').addEventListener('change', function() {
-        const customInput = document.getElementById('customScaleInput');
-        if (this.value === 'custom') {
-          customInput.style.display = 'inline-block';
-        } else {
-          customInput.style.display = 'none';
-        }
-      });
-    </script>
   </div>
 </body>
 </html>
