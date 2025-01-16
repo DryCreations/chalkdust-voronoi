@@ -23,7 +23,7 @@ let layers = {
 };
 let currentEditingLayer = 'coloredTiles';
 let exportScale = 1;
-let width = 1100, height = 425;
+let width = 512, height = 512;
 let selectedDotIndex = null;
 let offsetX = 0;
 let offsetY = 0;
@@ -833,11 +833,12 @@ function exportImage() {
     });
 
     // Redraw each layer geometry into scaled buffers
-    let delaunay = d3.Delaunay.from(points);
-    let voronoi = delaunay.voronoi([0, 0, bigWidth, bigHeight]);
+    let scaledPoints = points.map(([px, py]) => [px * scale, py * scale]);
+    let delaunay = d3.Delaunay.from(scaledPoints); // Use scaledPoints
+    let voronoi = delaunay.voronoi([0, 0, bigWidth, bigHeight]); // Use exact scaled dimensions
 
     // Scale utility for points
-    let scaledPoints = points.map(([px, py]) => [px * scale, py * scale]);
+    // let scaledPoints = points.map(([px, py]) => [px * scale, py * scale]);
 
     // Draw each layer in scaled buffers with scaled weights and blurs
     if (layers.coloredTiles) {
@@ -1001,7 +1002,7 @@ function drawColoredTilesScaled(voronoi, buffer, scaledPoints, scaleRatio) {
     buffer.fill(palette[colorIndexes[i]] || '#FAAB36');
     buffer.noStroke();
     buffer.beginShape();
-    polygon.forEach(([x, y]) => buffer.vertex(x * scaleRatio, y * scaleRatio)); // Scale coordinates
+    polygon.forEach(([x, y]) => buffer.vertex(x , y)); // Scale coordinates
     buffer.endShape(CLOSE);
   }
   buffer.pop();
@@ -1080,7 +1081,7 @@ function drawVoronoiEdgesScaled(voronoi, buffer, scaleRatio) {
     let polygon = voronoi.cellPolygon(i);
     if (!polygon) continue;
     buffer.beginShape();
-    polygon.forEach(([x, y]) => buffer.vertex(x * scaleRatio, y * scaleRatio)); // Scale coordinates
+    polygon.forEach(([x, y]) => buffer.vertex(x, y)); // Scale coordinates
     buffer.endShape(CLOSE);
   }
   buffer.pop();
@@ -1097,7 +1098,7 @@ function drawVoronoiFilledScaled(voronoi, buffer, scaledPoints, scaleRatio) {
       buffer.fill(fillColor.levels[0], fillColor.levels[1], fillColor.levels[2], 255);
       buffer.noStroke();
       buffer.beginShape();
-      polygon.forEach(([x, y]) => buffer.vertex(x * scaleRatio, y * scaleRatio)); // Scale coordinates
+      polygon.forEach(([x, y]) => buffer.vertex(x, y)); // Scale coordinates
       buffer.endShape(CLOSE);
     }
   }
