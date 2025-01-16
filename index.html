@@ -128,6 +128,8 @@
           <option value="delaunay">Delaunay</option>
           <option value="voronoiEdges">Voronoi Edges</option>
           <option value="voronoiFilled">Voronoi Filled</option>
+          <option value="coloredTilesBelowVoronoi">Colored Tiles Below Voronoi</option>
+          <option value="coloredTilesAboveVoronoi">Colored Tiles Above Voronoi</option>
         </select>
       </div>
 
@@ -295,6 +297,51 @@
         </div>
       </div>
       
+      <!-- ...existing code... -->
+      <h4>Extra Colored Tiles Below Voronoi</h4>
+      <div class="toggle-container">
+        <label for="layerColoredTilesBelowVoronoi">Enable:</label>
+        <input type="checkbox" id="layerColoredTilesBelowVoronoi">
+        <label for="extraTileColorsInput">Below Tile Colors (Comma Separated):</label>
+        <input type="text" id="extraTileColorsInput" value="invisible, #FD5901, #F78104, #FAAB36, #249EA0, #008083, #005F60">
+        <label for="layerColoredTilesBelowVoronoiShadow">Shadow Enable:</label>
+        <input type="checkbox" id="layerColoredTilesBelowVoronoiShadow">
+        <label for="layerColoredTilesBelowVoronoiShadowColor">Shadow Color:</label>
+        <input type="text" id="layerColoredTilesBelowVoronoiShadowColor" value="#000000">
+        <label for="layerColoredTilesBelowVoronoiShadowOpacity">Shadow Opacity:</label>
+        <input type="number" id="layerColoredTilesBelowVoronoiShadowOpacity" value="128" min="0" max="255">
+        <label for="layerColoredTilesBelowVoronoiShadowBlur">Shadow Blur:</label>
+        <input type="number" id="layerColoredTilesBelowVoronoiShadowBlur" value="10" min="0">
+        <label for="layerColoredTilesBelowVoronoiScreen">Screen Enable:</label>
+        <input type="checkbox" id="layerColoredTilesBelowVoronoiScreen">
+        <label for="layerColoredTilesBelowVoronoiScreenColor">Screen Color:</label>
+        <input type="text" id="layerColoredTilesBelowVoronoiScreenColor" value="#FFFFFF">
+        <label for="layerColoredTilesBelowVoronoiScreenOpacity">Screen Opacity:</label>
+        <input type="number" id="layerColoredTilesBelowVoronoiScreenOpacity" value="128" min="0" max="255">
+      </div>
+      <!-- ...existing code... -->
+      <h4>Extra Colored Tiles Above Voronoi</h4>
+      <div class="toggle-container">
+        <label for="layerColoredTilesAboveVoronoi">Enable:</label>
+        <input type="checkbox" id="layerColoredTilesAboveVoronoi">
+        <label for="aboveTileColorsInput">Above Tile Colors (Comma Separated):</label>
+        <input type="text" id="aboveTileColorsInput" value="invisible, #FD5901, #F78104, #FAAB36, #249EA0, #008083, #005F60">
+        <!-- ...existing code... -->
+        <label for="layerColoredTilesAboveVoronoiShadow">Shadow Enable:</label>
+        <input type="checkbox" id="layerColoredTilesAboveVoronoiShadow">
+        <label for="layerColoredTilesAboveVoronoiShadowColor">Shadow Color:</label>
+        <input type="text" id="layerColoredTilesAboveVoronoiShadowColor" value="#000000">
+        <label for="layerColoredTilesAboveVoronoiShadowOpacity">Shadow Opacity:</label>
+        <input type="number" id="layerColoredTilesAboveVoronoiShadowOpacity" value="128" min="0" max="255">
+        <label for="layerColoredTilesAboveVoronoiShadowBlur">Shadow Blur:</label>
+        <input type="number" id="layerColoredTilesAboveVoronoiShadowBlur" value="10" min="0">
+        <label for="layerColoredTilesAboveVoronoiScreen">Screen Enable:</label>
+        <input type="checkbox" id="layerColoredTilesAboveVoronoiScreen">
+        <label for="layerColoredTilesAboveVoronoiScreenColor">Screen Color:</label>
+        <input type="text" id="layerColoredTilesAboveVoronoiScreenColor" value="#FFFFFF">
+        <label for="layerColoredTilesAboveVoronoiScreenOpacity">Screen Opacity:</label>
+        <input type="number" id="layerColoredTilesAboveVoronoiScreenOpacity" value="128" min="0" max="255">
+      </div>
       <!-- ...existing code... -->
     </div>
 
