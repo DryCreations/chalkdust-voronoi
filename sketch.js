@@ -487,19 +487,19 @@ function updateAllLayers() {
   if (needsRedraw.delaunayCircles && layers.delaunayCircles) {
     drawDelaunayCircles(delaunay, buffers.delaunayCircles);
     applyBlurAndThreshold(buffers.delaunayCircles, 'delaunayCircles');
-    // applyBlurAndCorrectColor(buffers.delaunayCircles, color(getDelaunayCircleColor()));
+    applyBlurAndCorrectColor(buffers.delaunayCircles, color(getDelaunayCircleColor()));
     needsRedraw.delaunayCircles = false;
   }
   if (needsRedraw.delaunay && layers.delaunay) {
     drawDelaunay(delaunay, buffers.delaunay);
     applyBlurAndThreshold(buffers.delaunay, 'delaunay');
-    // applyBlurAndCorrectColor(buffers.delaunay, color(getDelaunayEdgeColor()));
+    applyBlurAndCorrectColor(buffers.delaunay, color(getDelaunayEdgeColor()));
     needsRedraw.delaunay = false;
   }
   if (needsRedraw.voronoiEdges && layers.voronoiEdges || needsRedraw.voronoiFilled && layers.voronoiFilled) {
     drawVoronoiEdges(voronoi, buffers.voronoiEdges);
     applyBlurAndThreshold(buffers.voronoiEdges, 'voronoiEdges');
-    // applyBlurAndCorrectColor(buffers.voronoiEdges, color(getVoronoiEdgeColor()));
+    applyBlurAndCorrectColor(buffers.voronoiEdges, color(getVoronoiEdgeColor()));
     needsRedraw.voronoiEdges = false;
   }
   if (needsRedraw.voronoiFilled && layers.voronoiFilled) {
@@ -508,7 +508,7 @@ function updateAllLayers() {
     buffers.voronoiFilled.noStroke();
     buffers.voronoiFilled.image(buffers.voronoiEdges, 0, 0);
     applyBlurAndThreshold(buffers.voronoiFilled, 'voronoiFilled');
-    // applyBlurAndCorrectColor(buffers.voronoiFilled, color(getVoronoiFillColor()));
+    applyBlurAndCorrectColor(buffers.voronoiFilled, color(getVoronoiFillColor()));
     needsRedraw.voronoiFilled = false;
   }
   if (needsRedraw.coloredTilesBelowVoronoi && layers.coloredTilesBelowVoronoi) {
@@ -996,24 +996,29 @@ function exportImage() {
     if (layers.dots) {
       drawDotsScaled(scaledBuffers.dots, scaledPoints, scaleRatio);
       applyBlurAndThresholdScaled(scaledBuffers.dots, 'dots', scaleRatio);
+      applyBlurAndCorrectColor(scaledBuffers.dots, color(getDotsColor()));
     }
     if (layers.delaunayCircles) {
       drawDelaunayCirclesScaled(delaunay, scaledBuffers.delaunayCircles, scaledPoints, scaleRatio);
       applyBlurAndThresholdScaled(scaledBuffers.delaunayCircles, 'delaunayCircles', scaleRatio);
+      applyBlurAndCorrectColor(scaledBuffers.delaunayCircles, color(getDelaunayCircleColor()));
     }
     if (layers.delaunay) {
       drawDelaunayScaled(delaunay, scaledBuffers.delaunay, scaledPoints, scaleRatio);
       applyBlurAndThresholdScaled(scaledBuffers.delaunay, 'delaunay', scaleRatio);
+      applyBlurAndCorrectColor(scaledBuffers.delaunay, color(getDelaunayEdgeColor()));
     }
     if (layers.voronoiEdges || layers.voronoiFilled) {
       drawVoronoiEdgesScaled(voronoi, scaledBuffers.voronoiEdges, scaleRatio);
       applyBlurAndThresholdScaled(scaledBuffers.voronoiEdges, 'voronoiEdges', scaleRatio);
+      applyBlurAndCorrectColor(scaledBuffers.voronoiEdges, color(getVoronoiEdgeColor()));
     }
     if (layers.voronoiFilled) {
       drawVoronoiFilledScaled(voronoi, scaledBuffers.voronoiFilled, scaledPoints, scaleRatio);
       scaledBuffers.voronoiFilled.noStroke();
       scaledBuffers.voronoiFilled.image(scaledBuffers.voronoiEdges, 0, 0);
       applyBlurAndThresholdScaled(scaledBuffers.voronoiFilled, 'voronoiFilled', scaleRatio);
+      applyBlurAndCorrectColor(scaledBuffers.voronoiFilled, color(getVoronoiFillColor()));
     }
     if (layers.coloredTilesBelowVoronoi) {
       drawColoredTilesBelowVoronoiScaled(voronoi, scaledBuffers.coloredTilesBelowVoronoi, scaledPoints, scaleRatio);
@@ -1025,7 +1030,7 @@ function exportImage() {
     // Draw shadow & screen for each scaled layer, including new layers
     ['coloredTiles','dots','delaunayCircles','delaunay','voronoiEdges','voronoiFilled','coloredTilesBelowVoronoi','coloredTilesAboveVoronoi'].forEach(layer => {
       if (layers[`${layer}Shadow`]) {
-        applyShadowToScaledBuffer(scaledBuffers[layer], scaledBuffers[`${layer}Shadow`], layer);
+        applyShadowToScaledBuffer(scaledBuffers[layer], scaledBuffers[`${layer}Shadow`], layer, scaleRatio); // Pass scaleRatio
       }
       if (layers[`${layer}Screen`]) {
         applyScreenToScaledBuffer(scaledBuffers[`${layer}Screen`], layer, bigWidth, bigHeight);
@@ -1120,6 +1125,23 @@ function exportImage() {
       tempCanvas.image(scaledBuffers.voronoiEdgesScreen, 0, 0);
       tempCanvas.noTint();
     }
+    
+    // Colored Tiles Below Voronoi
+    if (layers.coloredTilesBelowVoronoiShadow) {
+      tempCanvas.tint(255, getShadowOpacity('coloredTilesBelowVoronoi'));
+      tempCanvas.image(scaledBuffers.coloredTilesBelowVoronoiShadow, 0, 0);
+      tempCanvas.noTint();
+    }
+    if (layers.coloredTilesBelowVoronoi) {
+      tempCanvas.tint(255, getLayerOpacity('coloredTilesBelowVoronoi'));
+      tempCanvas.image(scaledBuffers.coloredTilesBelowVoronoi, 0, 0);
+      tempCanvas.noTint();
+    }
+    if (layers.coloredTilesBelowVoronoiScreen) {
+      tempCanvas.tint(255, getScreenOpacity('coloredTilesBelowVoronoi'));
+      tempCanvas.image(scaledBuffers.coloredTilesBelowVoronoiScreen, 0, 0);
+      tempCanvas.noTint();
+    }
 
     // Voronoi Filled
     if (layers.voronoiFilledShadow) {
@@ -1138,23 +1160,6 @@ function exportImage() {
       tempCanvas.noTint();
     }
 
-    // Colored Tiles Below Voronoi
-    if (layers.coloredTilesBelowVoronoiShadow) {
-      tempCanvas.tint(255, getShadowOpacity('coloredTilesBelowVoronoi'));
-      tempCanvas.image(scaledBuffers.coloredTilesBelowVoronoiShadow, 0, 0);
-      tempCanvas.noTint();
-    }
-    if (layers.coloredTilesBelowVoronoi) {
-      tempCanvas.tint(255, getLayerOpacity('coloredTilesBelowVoronoi'));
-      tempCanvas.image(scaledBuffers.coloredTilesBelowVoronoi, 0, 0);
-      scaledBuffers.coloredTilesBelowVoronoi.save("TEST.png")
-      tempCanvas.noTint();
-    }
-    if (layers.coloredTilesBelowVoronoiScreen) {
-      tempCanvas.tint(255, getScreenOpacity('coloredTilesBelowVoronoi'));
-      tempCanvas.image(scaledBuffers.coloredTilesBelowVoronoiScreen, 0, 0);
-      tempCanvas.noTint();
-    }
 
     // Colored Tiles Above Voronoi
     if (layers.coloredTilesAboveVoronoiShadow) {
@@ -1177,7 +1182,13 @@ function exportImage() {
 
     // Save the composited image
     tempCanvas.save('exported_scaled_' + scale + 'x.png');
+
+    scaledBuffers.forEach(canvas => {
+      canvas.remove();
+    });
   }
+
+
 }
 
 // Helper functions for scaled drawing
@@ -1328,10 +1339,10 @@ function applyBlurAndThresholdScaled(buffer, layer, scaleRatio) {
   buffer.updatePixels();
 }
 
-function applyShadowToScaledBuffer(srcBuffer, shadowBuffer, layer) {
+function applyShadowToScaledBuffer(srcBuffer, shadowBuffer, layer, scaleRatio) {
   shadowBuffer.clear();
   shadowBuffer.image(srcBuffer, 0, 0);
-  let blurAmount = getShadowBlur(layer);
+  let blurAmount = getShadowBlur(layer) * scaleRatio; // Scale the blur amount
   if (blurAmount > 0) {
     shadowBuffer.filter(BLUR, blurAmount);
   }
