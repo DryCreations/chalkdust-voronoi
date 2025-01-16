@@ -359,6 +359,28 @@ function applyBlurAndThreshold(buffer, layer) {
   buffer.updatePixels();
 }
 
+function applyBlurAndCorrectColor(buffer, color) {
+    buffer.filter(BLUR, 1); // Apply minor blur
+
+    buffer.loadPixels();
+    for (let x = 0; x < buffer.width; x++) {
+        for (let y = 0; y < buffer.height; y++) {
+            let index = (x + y * buffer.width) * 4;
+            let r = buffer.pixels[index];
+            let g = buffer.pixels[index + 1];
+            let b = buffer.pixels[index + 2];
+            let a = buffer.pixels[index + 3];
+
+            // Apply the correct color while keeping the blurred opacity
+            buffer.pixels[index] = red(color);
+            buffer.pixels[index + 1] = green(color);
+            buffer.pixels[index + 2] = blue(color);
+            buffer.pixels[index + 3] = a; // Keep the blurred opacity
+        }
+    }
+    buffer.updatePixels();
+}
+
 function isMouseInCanvas() {
   return mouseX >= 0 && mouseX <= width && mouseY >= 0 && mouseY <= height;
 }
@@ -405,26 +427,31 @@ function updateAllLayers() {
   if (needsRedraw.coloredTiles && layers.coloredTiles) {
     drawColoredTiles(voronoi, buffers.coloredTiles);
     applyBlurAndThreshold(buffers.coloredTiles, 'coloredTiles');
+    // applyBlurAndCorrectColor(buffers.coloredTiles, color(getTilePalette()[0])); // Example color
     needsRedraw.coloredTiles = false;
   }
   if (needsRedraw.dots && layers.dots) {
     drawDots(buffers.dots);
     applyBlurAndThreshold(buffers.dots, 'dots');
+    // applyBlurAndCorrectColor(buffers.dots, color(getDotsColor()));
     needsRedraw.dots = false;
   }
   if (needsRedraw.delaunayCircles && layers.delaunayCircles) {
     drawDelaunayCircles(delaunay, buffers.delaunayCircles);
     applyBlurAndThreshold(buffers.delaunayCircles, 'delaunayCircles');
+    // applyBlurAndCorrectColor(buffers.delaunayCircles, color(getDelaunayCircleColor()));
     needsRedraw.delaunayCircles = false;
   }
   if (needsRedraw.delaunay && layers.delaunay) {
     drawDelaunay(delaunay, buffers.delaunay);
     applyBlurAndThreshold(buffers.delaunay, 'delaunay');
+    // applyBlurAndCorrectColor(buffers.delaunay, color(getDelaunayEdgeColor()));
     needsRedraw.delaunay = false;
   }
   if (needsRedraw.voronoiEdges && layers.voronoiEdges || needsRedraw.voronoiFilled && layers.voronoiFilled) {
     drawVoronoiEdges(voronoi, buffers.voronoiEdges);
     applyBlurAndThreshold(buffers.voronoiEdges, 'voronoiEdges');
+    // applyBlurAndCorrectColor(buffers.voronoiEdges, color(getVoronoiEdgeColor()));
     needsRedraw.voronoiEdges = false;
   }
   if (needsRedraw.voronoiFilled && layers.voronoiFilled) {
@@ -433,6 +460,7 @@ function updateAllLayers() {
     buffers.voronoiFilled.noStroke();
     buffers.voronoiFilled.image(buffers.voronoiEdges, 0, 0);
     applyBlurAndThreshold(buffers.voronoiFilled, 'voronoiFilled');
+    // applyBlurAndCorrectColor(buffers.voronoiFilled, color(getVoronoiFillColor()));
     needsRedraw.voronoiFilled = false;
   }
 
@@ -764,7 +792,61 @@ function handleLayerEditing() {
 }
 
 function exportImage() {
-  // Placeholder export function
+  let scale = exportScale; // Already defined from user input
+
+  // Define layer ordering for naming
+  let layerOrder = [
+    { name: 'coloredTiles', label: 'coloredTiles' },
+    { name: 'dots', label: 'dots' },
+    { name: 'delaunayCircles', label: 'delaunayCircles' },
+    { name: 'delaunay', label: 'delaunay' },
+    { name: 'voronoiEdges', label: 'voronoiEdges' },
+    { name: 'voronoiFilled', label: 'voronoiFilled' }
+  ];
+
+  if (scale === 1) {
+    // 1. Save all buffers as is
+    layerOrder.forEach((layer, i) => {
+      if (layers[layer.name]) {
+        saveCanvasLayer(buffers[layer.name], nf(i, 2) + '_' + layer.label);
+      }
+    });
+    // 2. Save main canvas last
+    saveCanvas(nf(layerOrder.length, 2) + '_mainCanvas');
+  } else {
+    // 1. Create larger buffers and main canvas
+    let bigWidth = width * scale;
+    let bigHeight = height * scale;
+    let tempCanvas = createGraphics(bigWidth, bigHeight);
+
+    // 2. Redraw each layer into a bigger buffer
+    layerOrder.forEach((layer, i) => {
+      if (layers[layer.name]) {
+        let bigBuffer = createGraphics(bigWidth, bigHeight);
+        bigBuffer.push();
+        bigBuffer.scale(scale);
+        // Draw the existing buffer content
+        bigBuffer.image(buffers[layer.name], 0, 0);
+        bigBuffer.pop();
+        saveCanvasLayer(bigBuffer, nf(i, 2) + '_' + layer.label + '_' + scale + 'x');
+      }
+    });
+
+    // 3. Redraw main canvas at higher resolution
+    tempCanvas.push();
+    tempCanvas.scale(scale);
+    tempCanvas.image(get(0,0,width,height), 0, 0);
+    tempCanvas.pop();
+    saveCanvasLayer(tempCanvas, nf(layerOrder.length, 2) + '_mainCanvas_' + scale + 'x');
+  }
+}
+
+// Helper function for naming and saving
+function saveCanvasLayer(g, filename) {
+  // Make an HTML canvas copy from the p5.Graphics object
+  let c = createImage(g.width, g.height);
+  c.copy(g, 0, 0, g.width, g.height, 0, 0, g.width, g.height);
+  c.save(filename + '.png');
 }
 
 function mousePressed() {
